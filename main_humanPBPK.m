@@ -15,7 +15,16 @@ tspan = tStart:0.5:tEnd;
 opts2 = odeset('NonNegative',1:18);
 
 % Solve ODEs using ode15s
-[t, y] = ode45(@(t, y) ODEs_human(t, y, params), tspan, y0,opts2);
+[t_temp, y_temp] = ode45(@(t, y) ODEs_human(t, y, params), tspan, y0,opts2);
+
+volumes = [params.Vv params.Va params.Vlu params.Vpl params.Vbr params.Vhr params.Vad params.Vmu params.Vsk params.Voth params.Vbo params.Vsp params.Vkd params.Vgu params.Vli params.Vln];
+
+for i = 1 : length(volumes)
+    y_local(:,i) = y_temp(:,i) ./ volumes(i);
+end
+
+
+
 
 % Plot results
 figure;

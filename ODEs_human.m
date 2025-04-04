@@ -17,8 +17,8 @@ Csp= y(12);
 Ckd= y(13);
 Cgu= y(14);
 Cli= y(15);
-Agl= y(16);
-Cln= y(17);
+Cln= y(16);
+Agl= y(17);
 Ad= y(18);
 
 % Compute drug concentrations exiting each tissue
@@ -54,57 +54,56 @@ Cvli = Cli/params.Pli;
 
 Cvt = Cvbr + Cvad + Cvhr + Cvmu + Cvbo + Cvsk + Cvkd + Cvsp + Cvgu + Cvli + Cvln + Cvoth;
 
-
 % Eq 1 - Dynamics of drug concentration in venous blood
 temp1 = (params.Qt-params.Lt)*Cvt;
-Cv = (1/params.Vv) * (temp1 + (params.Lln *Cvln)-params.Qc*Cv);
+Cv = temp1 + (params.Lln *Cvln)-params.Qc*Cv;
 
 % Eq 2 - Dynamics of drug concentration in arterial blood
 temp2  = params.Qt*Ca;
-Ca = (1/params.Va) * ((params.Qc-params.Llu) * Cvlu - temp2);
+Ca = (params.Qc-params.Llu) * Cvlu - temp2;
 
 % Eq 3 - Drug concentration in lung compartment
-Clu = (1/params.Vlu) * (params.Qc*Cv - (params.Qc-params.Llu)*Cvlu - (params.Llu-params.Qpl) *Cvlu - params.Qpl * Cvlu);
+Clu = params.Qc*Cv - (params.Qc-params.Llu)*Cvlu - (params.Llu-params.Qpl) *Cvlu - params.Qpl * Cvlu;
 
 % Eq 4 - Drug concentration in pleura compartment
-Cpl =  (1/params.Vpl) * (params.Qpl * Cvlu - params.Qpl*Cpl);
+Cpl = params.Qpl * Cvlu - params.Qpl*Cpl;
 
 % Eq 5 -10 Drug concentration in non-eliminating tissues/organs with afferent
 % lymph (brain, heart, adipose, musparams.CLe, skin, and others)
-Cbr = (1/params.Vbr)* (params.Qbr * Ca - (params.Qbr-params.Lbr)*Cvbr-params.Lbr *Cvbr); %brain Eq 5
+Cbr = params.Qbr * Ca - (params.Qbr-params.Lbr)*Cvbr-params.Lbr *Cvbr; %brain Eq 5
 
-Chr =(1/params.Vhr)* (params.Qhr * Ca - (params.Qhr-params.Lhr)*Cvhr-params.Lhr *Cvhr); %heart Eq 6
+Chr =params.Qhr * Ca - (params.Qhr-params.Lhr)*Cvhr-params.Lhr *Cvhr; %heart Eq 6
 
-Cad =(1/params.Vad)* (params.Qad * Ca - (params.Qad-params.Lad)*Cvad-params.Lad *Cvad); %adipose Eq 7
+Cad =params.Qad * Ca - (params.Qad-params.Lad)*Cvad-params.Lad *Cvad; %adipose Eq 7
 
-Cmu =(1/params.Vmu)* (params.Qmu * Ca - (params.Qmu-params.Lmu)*Cvmu-params.Lmu *Cvmu); %musparams.CLe Eq 8
+Cmu =params.Qmu * Ca - (params.Qmu-params.Lmu)*Cvmu-params.Lmu *Cvmu; %musparams.CLe Eq 8
 
-Csk =(1/params.Vsk)* (params.Qsk * Ca - (params.Qsk-params.Lsk)*Cvsk-params.Lsk *Cvsk); %skin Eq 9
+Csk =params.Qsk * Ca - (params.Qsk-params.Lsk)*Cvsk-params.Lsk *Cvsk; %skin Eq 9
 
-Coth =(1/params.Voth)* (params.Qoth * Ca - (params.Qoth-params.Loth)*Cvoth-params.Loth *Cvoth); %others Eq 10
+Coth =params.Qoth * Ca - (params.Qoth-params.Loth)*Cvoth-params.Loth *Cvoth; %others Eq 10
 
 % Eq 11 - 12 Drug concentration in non-eliminating tissues/organs without
 % afferent lymph (bone, spleen)
-Cbo = (1/params.Vbo) * (params.Qbo*Ca - params.Qbo*Cvbo); % bone Eq 12
+Cbo = params.Qbo*Ca - params.Qbo*Cvbo; % bone Eq 12
 
-Csp = (1/params.Vsp) * (params.Qsp*Ca - params.Qsp*Cvsp); % spleen Eq 12
+Csp = params.Qsp*Ca - params.Qsp*Cvsp; % spleen Eq 12
 
 % Eq 13 - Drug concentration in kidney compartment
-Ckd = (1/params.Vkd) * (params.Qkd*Ca - (params.Qkd - params.Lkd)*Cvkd - params.Lkd *Cvkd-params.fR*params.CL*Ca);
+Ckd = params.Qkd*Ca - (params.Qkd - params.Lkd)*Cvkd - params.Lkd *Cvkd-params.fR*params.CL*Ca;
 
 % Eq 14 - Drug concentration in gut compartment
-Cgu = (1/params.Vgu) * (params.Qgu*Ca - (params.Qgu-params.Lgu)*Cvgu - params.Lgu*Cvgu + params.ka *Ad + params.kr*Agl);
+Cgu = params.Qgu*Ca - (params.Qgu-params.Lgu)*Cvgu - params.Lgu*Cvgu + params.ka *Ad + params.kr*Agl;
 
 % Eq 15 - Drug concentration in liver compartment
 temp3 = params.Qla*Ca + params.Qsp*Csp + params.Qgu*Cgu;
-Cli = (1/params.Vli) * params.Qla*Ca + params.Qsp*Cvsp + (params.Qgu-params.Lgu)*Cvgu - (params.Qli-params.Lli)*Cvli - params.Lli * Cvli- (1-params.fR)*params.CL*(temp3/params.Qli);
+Cli = params.Qla*Ca + params.Qsp*Cvsp + (params.Qgu-params.Lgu)*Cvgu - (params.Qli-params.Lli)*Cvli - params.Lli * Cvli- (1-params.fR)*params.CL*(temp3/params.Qli);
 
 % Eq 16 - Drug concentration in gut lumen compartment
 Agl = (1-params.fR) * params.CL*(temp3/params.Qli) - params.kr*Agl - params.kF*Agl;
 
 % Eq 17 - Drug concentration in lymph node compartment
 temp4 = params.Lt*Cvt;
-Cln = (1/params.Vln) *temp4 - params.Lln*Cvln;
+Cln = temp4 - params.Lln*Cvln;
 
 % Eq 18 - Drug absorption
 Ad = -params.ka *Ad;
