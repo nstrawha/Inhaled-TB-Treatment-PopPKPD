@@ -56,17 +56,17 @@ Cvt = Cvbr + Cvad + Cvhr + Cvmu + Cvbo + Cvsk + Cvkd + Cvsp + Cvgu + Cvli + Cvln
 
 
 % Eq 1 - Dynamics of drug concentration in venous blood
-temp1 = sum((params.Qt-params.Lt)*Cvt);
+temp1 = (params.Qt-params.Lt)*Cvt;
 Cv = (1/params.Vv) * (temp1 + (params.Lln *Cvln)-params.Qc*Cv);
 
 % Eq 2 - Dynamics of drug concentration in arterial blood
-temp2  = sum(params.Qt*Ca);
+temp2  = params.Qt*Ca;
 Ca = (1/params.Va) * ((params.Qc-params.Llu) * Cvlu - temp2);
 
 % Eq 3 - Drug concentration in lung compartment
 Clu = (1/params.Vlu) * (params.Qc*Cv - (params.Qc-params.Llu)*Cvlu - (params.Llu-params.Qpl) *Cvlu - params.Qpl * Cvlu);
 
-% Eq 4 - Drug concentration in pleua compartment
+% Eq 4 - Drug concentration in pleura compartment
 Cpl =  (1/params.Vpl) * (params.Qpl * Cvlu - params.Qpl*Cpl);
 
 % Eq 5 -10 Drug concentration in non-eliminating tissues/organs with afferent
@@ -103,7 +103,7 @@ Cli = (1/params.Vli) * params.Qla*Ca + params.Qsp*Cvsp + (params.Qgu-params.Lgu)
 Agl = (1-params.fR) * params.CL*(temp3/params.Qli) - params.kr*Agl - params.kF*Agl;
 
 % Eq 17 - Drug concentration in lymph node compartment
-temp4 = sum(params.Lt*Cvt);
+temp4 = params.Lt*Cvt;
 Cln = (1/params.Vln) *temp4 - params.Lln*Cvln;
 
 % Eq 18 - Drug absorption
