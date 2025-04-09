@@ -54,7 +54,7 @@ A_total = [];
 A0 = zeros(1,18); A0(18) = 600;
 
 for d = 1:7
-    [t, A] = ode15s(@(t, A) odePBPK(t, A, ka, kr, kF, CL, fR, phys, pt), [0 24], A0);
+    [t, A] = ode15s(@(t, A) odePBPK_human(t, A, ka, kr, kF, CL, fR, phys, pt), [0 24], A0);
     A0 = A(end, :);  % update for next dose
     A0(18) = A0(18) + 600;  % new daily dose to gut lumen
     t_total = [t_total; t + 24*(d-1)];
