@@ -1,5 +1,5 @@
 function pt = loadPartitionCoefficients(drug)
-% Load partition coefficients for Rifampicin from Table S5
+% Load partition coefficients from Table S5
 if strcmpi(drug, 'rifampicin')
     pt.Lu = 1.7115;
     pt.LN = 1.2081;

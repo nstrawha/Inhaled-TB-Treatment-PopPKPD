@@ -1,9 +1,6 @@
 
 % Parameters (from Tables S2–S5, S7)
 BW = 70; % kg
-% Initial conditions (18 compartments + dose + gut lumen)
-% A0 = zeros(1, 18);
-
 
 %Rifampicin
 phys = loadPhysiology(BW);
@@ -115,4 +112,4 @@ set(gca,'FontSize',25);
 legend show;
 grid on;
 
-sgtitle('rifampicin');
+sgtitle('Rifampicin','FontSize',30);
