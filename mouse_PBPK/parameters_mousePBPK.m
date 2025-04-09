@@ -43,6 +43,10 @@ params.Vvb = ;%Vvb = venous blood vol
 params.Vsp = %Vsp = spleen vol
 params.Vgu = ;%Vgu = gut vol
 
+params.Qot = params.Vad + params.Vbr + params.Vbn + params.Vht + params.Vm  + params.Vsk + params.Vpa;
+
+params.Voth = 
+
 
 
 %% Partition coefficients - calcuated with Rowland Rodgers equations
@@ -62,12 +66,12 @@ params.Vgu = ;%Vgu = gut vol
 %For RIF
 params.Kplu = 1.7115;
 params.Kpki = 2.1725;
-params.Kpli = 1.9646;
+params.Kpli = 0.76;
 params.Ksp = 1.3950;
 params.Kgu = 1.0781;
 
-params.Kpad  = 0.1885; %adipose
-params.Kpbr = 0.2285; %brain
+params.Kpad  = 0.21; %adipose
+params.Kpbr = 1; %brain
 params.Kpbn = 0.3157; %bone
 params.Kpht = 1.0158; % heart
 params.Kpm = 0.6949; % muscle
