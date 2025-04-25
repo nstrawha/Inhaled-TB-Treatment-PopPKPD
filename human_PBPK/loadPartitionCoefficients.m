@@ -8,7 +8,7 @@ if strcmpi(drug, 'rifampicin')
     pt.Tissue.Heart   = 1.0158;
     pt.Tissue.Muscle  = 0.6949;
     pt.Tissue.Skin    = 0.6265;
-    pt.Tissue.Others  = 1.0047;
+    pt.Tissue.Others  = 1.047;
     pt.Tissue.Bone    = 0.3157;
     pt.Tissue.Spleen  = 1.3950;
     pt.Tissue.Kidney  = 2.1725;
