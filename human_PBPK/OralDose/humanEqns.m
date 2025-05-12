@@ -1,4 +1,4 @@
-function dA = odePBPK_VolsIncluded(~, A, ka, kr,kF, CL, fR, phys, pt)
+function dA = humanEqns(~, A, ka, kr,kF, CL, fR, phys, pt)
 % Indexing convention for compartments:
 % 1: Venous blood, 2: Arterial blood, 3: Lung
 % 4: Pleura, 5: Brain, 6: Adipose, 7: Heart, 8: Muscle
@@ -56,7 +56,7 @@ dA(15) = (1/V.Liver) * (Q.LA * A(2) + Q.Sp * A(12)/pt.Tissue.Spleen + (Q.Gu-L.Gu
 dA(16) = (1/V.LN) * (L.Br * A(5)/pt.Tissue.Brain + L.Ad * A(6)/pt.Tissue.Adipose + L.Hr * A(7)/pt.Tissue.Heart +...
     L.Mu * A(8)/pt.Tissue.Muscle + L.Sk * A(9)/pt.Tissue.Skin + L.Oth * A(10)/pt.Tissue.Others+...
     L.Kd * A(13)/pt.Tissue.Kidney + L.Gu * A(14)/pt.Tissue.Gut + L.Li * A(15)/pt.Tissue.Liver + ...
-    + (L.Lu-Q.Pl)*A(3)+Q.Pl*A(4) - L.LN * A(16)/pt.LN);
+    + (L.Lu-Q.Pl)*A(3)/pt.Lu +Q.Pl*A(4) - L.LN * A(16)/pt.LN);
 
 %% Gut Lumen
 dA(17) = (1 - fR) * CL * ((Q.LA * A(2) + Q.Sp * A(12)/pt.Tissue.Spleen + (Q.Gu-L.Gu) * A(14)/pt.Tissue.Gut) / Q.Li) - kr * A(17) - kF * A(17);

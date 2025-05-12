@@ -1,32 +1,33 @@
 function phys = loadPhysiologyMouse(BW)
-%% RIF
-phys.BP = 0.9;       %BP: blood to plasma ratio (Supp Table 1)
 
 %% Blood flow rates
 QC = 1.04; %(L/h) total cardiac output
 % blood flow rate (fraction of total cardiac output) from Lee 2020 Supp
 % Table 1
-phys.Q.Sp = (0.011*QC); % spleen - but should this include pancreas?  Lee 2020
+phys.Q.Sp = (0.011*QC); % spleen Lee 2020 - but should this include pancreas per Reali paper  
 phys.Q.Ha = (0.02*QC); % hepatic artery Lee 2020
 phys.Q.Li = (0.16*QC);% liver Lee 2020 matches Ruark 2014
 phys.Q.Ki = (0.091*QC);%kidney Lee 2020
-phys.Q.Gu = (0.11*QC); % gut but taking the intestines?  Lee 2020
+phys.Q.Gu = (0.11*QC); % gut but taking the intestines from  Lee 2020
 
 %Other refers to 8 tissues: adipose, bone, brain, heart, muscle, gonads,
 %and skin or is pancreas included here? Reali text is confusing for
-%pancreas - didn't included gonads and pancreasfor this though no numbers
-phys.QAd  = (0.070 *QC); %adipose  Lee 2020 matches fat Ruark 2014
-phys.QBr = (0.033*QC); %brain Lee 2020 matches Ruark 2014
-phys.QBn = 0.05*QC; %bone i think in Brown?
-phys.QHt = (0.066*QC); % heart Lee 2020
-phys.QMu = (0.16*QC); % muscle Lee 2020
+%pancreas - didn't included gonads and pancreas for this though no numbers
+% phys.QAd  = (0.070 *QC); %adipose  Lee 2020 matches fat Ruark 2014
+% phys.QBr = (0.033*QC); %brain Lee 2020 matches Ruark 2014
+% phys.QBn = 0.05*QC; %bone i think in Brown?
+% phys.QHt = (0.066*QC); % heart Lee 2020
+% phys.QMu = (0.16*QC); % muscle Lee 2020
 % Qg = ; % gonads
-phys.QSk = 0.058;% skin
+% phys.QSk = 0.058;% skin
 % phys.Qpa = (0.017*BW); %pancreas
 
-phys.Q.Oth = phys.QAd + phys.QBr + phys.QBn + phys.QHt + phys.QMu  + phys.QSk;
+% phys.Q.Oth = phys.QAd + phys.QBr + phys.QBn + phys.QHt + phys.QMu  + phys.QSk;
+% OR can do the lungs minus what is known in this model: spleen, kidney,
+% liver, gut 
+phys.Q.Oth = 1- (0.011 + 0.16 + 0.091 + 0.11);
 
-%% Tissue volumes
+%% Tissue volumes - Lee 2020 mostly (Ruark and Brown for what's not in Lee 2020)
 % BW is in kg
 phys.V.A = 0.02;% arterial blood vol
 phys.V.V = 0.045;% venous blood vol
@@ -44,30 +45,7 @@ phys.Vmu = 0.384*BW;
 phys.Vsk = 0.165*BW; 
 % rest of body? 2.5 + 5.7 = 0.025 + 0.057
 
-phys.V.Oth = phys.Vad + phys.Vbr + phys.Vbn + phys.Vht + phys.Vmu + phys.Vsk ;
-
-
-%% Partition coefficients - calcuated with Rowland Rodgers equations
-
-% From Ramachandran 2023 who calculated using RR equations Table S5 for
-% humans techinically
-%For RIF
-phys.KP.Lu = 0.441;   %Kplu = tissue to plasma partition coef for lung (Supp Table 3) maybe we don't put this? It says the 'best fitted parameter'
-phys.KP.Ki = 2.1725;
-phys.KP.Li = 0.76;
-phys.KP.Sp = 1.3950;
-phys.KP.Gu = 1.0781;
-
-phys.Kpad  = 0.21; %adipose
-phys.Kpbr = 1; %brain
-phys.Kpbn = 0.3157; %bone
-phys.Kpht = 1.0158; % heart
-phys.Kpm = 0.6949; % muscle
-% Kpg = ; % gonads
-phys.Kpsk = 0.6265;% skin
-% Kppa = ; %pancreas
-
-phys.KP.Oth = phys.Kpad + phys.Kpbr + phys.Kpbn + phys.Kpht + phys.Kpm  + phys.Kpsk;
+phys.V.Oth = phys.Vad + phys.Vbr + phys.Vbn + phys.Vht + phys.Vmu + phys.Vsk;
 
 end
 
