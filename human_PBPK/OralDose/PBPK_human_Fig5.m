@@ -1,4 +1,5 @@
-
+%% To recreate Figure 5 in main text drug concentrations in lung
+clear all
 % Parameters the same for all 4 drugs (from Tables S2–S5, S7)
 BW = 70; % kg
 phys = loadPhysiology(BW);
@@ -42,9 +43,11 @@ pt_PYZ = loadPartitionCoefficients('pyrazinamide');
 options = odeset('RelTol',1e-6,'AbsTol',1e-8); %To solve ODEs
 
 %% Figure 5  (lung)  Day 1 for RIF, INH, PYZ and Day 7 for EMB
-figure;
+fig = figure();
+fig.Position = [00 00 1920 1080];
 tiledlayout(2,2);
-set(gcf,'Position',[00 00 1920 1080])
+set(0,'DefaultFigureWindowStyle','docked');
+
 
 % RIF - Day 1 
 A0_RIF = zeros(1,18); A0_RIF(18) = 600;

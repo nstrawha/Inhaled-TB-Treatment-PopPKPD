@@ -1,4 +1,5 @@
-
+%% To recreate Figure 6 in main text drug concentrations at various extrapulmonary sites
+clear all
 % Parameters the same for all 4 drugs (from Tables S2–S5, S7)
 BW = 70; % kg
 phys = loadPhysiology(BW);
@@ -42,9 +43,10 @@ pt_PYZ = loadPartitionCoefficients('pyrazinamide');
 options = odeset('RelTol',1e-6,'AbsTol',1e-8); %To solve ODEs
 
 %% Figure 6 (2 parts, 4 panels then 1 solo panel)
-figure;
-t = tiledlayout(2,2);
-set(gcf,'Position',[00 00 1920 1080])
+fig = figure();
+fig.Position = [00 00 1920 1080];
+tiledlayout(2,2);
+set(0,'DefaultFigureWindowStyle','docked');
 
 % RIF
 A0_RIF = zeros(1,18); A0_RIF(18) = 600;
@@ -134,7 +136,11 @@ for d = 1:7
     A0_PYZ=[A_PYZ(end,1:17)';A_PYZ(end,18)+1600];
 end
 
-figure;
+
+fig = figure();
+fig.Position = [00 00 1920 1080];
+set(0,'DefaultFigureWindowStyle','docked');
+
 plot(t_PYZ, A_PYZ(:,16), 'DisplayName', 'Lymph Node','LineWidth',2); hold on;
 plot(t_PYZ, A_PYZ(:,5), 'DisplayName', 'Brain','LineWidth',2);
 plot(t_PYZ, A_PYZ(:,11), 'DisplayName', 'Bone','LineWidth',2);
