@@ -1,0 +1,146 @@
+%% Run PBPK
+% Model adapted from Ramachandran & Gadgil, 2023
+% Original script by Alexis Hoerter
+% Adapted for lung dose comparison
+% June 2025
+
+clc;
+clearvars;
+
+addpath("Oral_Dose_ODEs/");
+addpath("Lung_Dose_ODEs/");
+addpath("Methods/");
+
+
+%% Set parameters
+
+% Modeling parameters
+n_pts_RIF = 100; % number of patients to simulate
+tstep_RIF = 0.01;
+
+oral_dose_RIF = 600;    % mg
+lung_dose_RIF = 600;    % mg
+oral_dose_freq_RIF = 1; % 1x daily
+lung_dose_freq_RIF = 1; % 1x daily
+n_params_RIF = 15;
+
+% RIF-specific parameters
+ka_oral_RIF = 1.08;     % absorption rate [1/h]
+kdiss_lung_RIF = 50;    % dissolution rate [1/h] from Himstedt et al.
+kF_RIF = 0.252;         % gut transit rate
+kr_RIF = 0.17;          % gut reabsorption rate [1/h]
+
+CL_RIF = 7.86;          % systemic clearance [L/h]
+fR_RIF = 0.1830;        % fractional renal clearance
+
+kmuc_RIF = 0;           % mucociliary clearance [1/h] from Himstedt et al. (not implemented)
+br_frac_RIF = 9/49;     % proportion of RIF absorbed by bronchi from Himstedt et al.
+effRB_RIF = 2.56;       % bronchi efflux ratio from Himstedt et al.
+effRA_RIF = 3.67;       % alveolar efflux ratio from Himstedt et al.
+
+% model compts      name                index in concentration array
+compt_list_RIF =   ["Plasma";           % 1
+                    "Arterial Blood";   % 2
+                    "Lung";             % 3
+                    "Pleura";           % 4
+                    "Brain";            % 5
+                    "Adipose Tissue";   % 6
+                    "Heart";            % 7
+                    "Muscle";           % 8
+                    "Skin";             % 9
+                    "Other Tissue";     % 10
+                    "Bone";             % 11
+                    "Spleen";           % 12
+                    "Kidney";           % 13
+                    "Gut";              % 14
+                    "Liver";            % 15
+                    "Lymph Node";       % 16
+                    "Gut Lumen";        % 17
+                    "ELFb"              % 18
+                    "ELFa"              % 19
+                    "Absorption"];      % 20;
+
+ncompts_total_RIF = length(compt_list_RIF);
+toxic_compts_RIF = ["Liver", "Kidney"];
+
+
+%% Set up plotting and calculations
+
+ndays_RIF = 1; % day to calculate ODEs metrics for
+days_to_plot_RIF = 1; % number of days to show in the plot
+
+% decide which compartments to plot
+compts_to_plot_RIF = {"Lung", "Plasma", "Pleura", "Lymph Node", "Liver", "Kidney"};
+
+% initialize cell arrays to store params and output
+param_store_RIF = cell(1, n_pts_RIF);
+Cs_oral_store_RIF = cell(1, n_pts_RIF);
+Cs_lung_store_RIF = cell(1, n_pts_RIF);
+
+
+%% Iterate through patients
+
+for i_pt = 1:n_pts_RIF
+    
+    % sample physiological parameters
+    body_weight_PD = makedist("Normal", "mu", 70, "sigma", 1.10); % SD from Dugas et al.
+    body_weight_PD = truncate(body_weight_PD, 70 - 3*1.10, 70 + 3*1.10);
+    body_weight = random(body_weight_PD);
+
+    [vol_PDs_RIF, flow_PDs_RIF, flow_frac_PDs_RIF] = getParamPDs(body_weight);
+
+    [phys_RIF, pt_RIF]  = loadPhysParams("RIF", vol_PDs_RIF, flow_PDs_RIF, flow_frac_PDs_RIF);
+
+    % package params                % index
+    params_RIF =   {oral_dose_RIF;  % 1
+                    lung_dose_RIF;  % 2
+                    ka_oral_RIF;    % 3
+                    CL_RIF;         % 4
+                    fR_RIF;         % 5
+                    kr_RIF;         % 6
+                    pt_RIF;         % 7
+                    phys_RIF;       % 8
+                    kF_RIF;         % 9
+                    kdiss_lung_RIF; % 10
+                    effRB_RIF;      % 11
+                    effRA_RIF;      % 12
+                    br_frac_RIF;    % 13
+                    tstep_RIF};     % 14
+
+    % solve ODEs
+    [t_oraldose_RIF, C_oraldose_RIF_pt, t_lungdose_RIF, C_lungdose_RIF_pt] = solveODEs("RIF", params_RIF, ncompts_total_RIF, ndays_RIF, ...
+                                                                                oral_dose_freq_RIF, lung_dose_freq_RIF);
+    % store results
+    param_store_RIF{i_pt} = params_RIF;
+    Cs_oral_store_RIF{i_pt} = C_oraldose_RIF_pt;
+    Cs_lung_store_RIF{i_pt} = C_lungdose_RIF_pt;
+
+    % track progress
+    disp(append(num2str(i_pt), "/", num2str(n_pts_RIF), " patients completed"))
+
+end
+
+
+%% Plot resulting timecourses
+
+% iterate through compartments
+for compt_idx = 1:length(compts_to_plot_RIF)
+    compt = compts_to_plot_RIF{compt_idx};
+    [idx_to_plot, ~] = find(string(compt_list_RIF) == compt);
+
+    % pull all concentration timecourses for the current compartment
+    current_Cs_orals = cell2mat(cellfun(@(x) x(:, idx_to_plot), Cs_oral_store_RIF, "UniformOutput", false));
+    current_Cs_lungs = cell2mat(cellfun(@(x) x(:, idx_to_plot), Cs_lung_store_RIF, "UniformOutput", false));
+
+    plotTimecourses(params_RIF, compt, ndays_RIF, days_to_plot_RIF, oral_dose_freq_RIF, lung_dose_freq_RIF, ...
+                    t_oraldose_RIF, current_Cs_orals, t_lungdose_RIF, current_Cs_lungs);
+
+end
+
+
+%% Analysis
+
+trackPKMetrics(compt_list_RIF, params_RIF, toxic_compts_RIF, oral_dose_RIF, ...
+                oral_dose_freq_RIF, lung_dose_RIF, lung_dose_freq_RIF, ...
+                compts_to_plot_RIF, ndays_RIF, t_oraldose_RIF, ...
+                Cs_oral_store_RIF, Cs_lung_store_RIF)
