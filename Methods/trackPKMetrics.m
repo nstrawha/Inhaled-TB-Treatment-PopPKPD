@@ -1,12 +1,66 @@
-function trackPKMetrics(compt_list, params, toxic_compts, odose, odose_freq, ldose, ldose_freq, compts_to_plot, days, t, Cs_oral, Cs_lung)
-% function to analyze AUC_24, C_avg, and C_max and 
-% write results to output file
+function [AUCs_oral_store, AUCs_lung_store, Cmaxs_oral_store, Cmaxs_lung_store] = trackPKMetrics(drug, compt_list, relevant_compts, toxic_compts, odose, odose_freq, ldose, ldose_freq, n_days, tstep, ts, n_pts, Cs_oral, Cs_lung)
+% TRACKPKMETRICS - Records, analyzes, and stores AUC, Cavg, and Cmax for a
+% comparison between oral and lung dosing methods.
+%
+% DESCRIPTION:
+%   This function takes the concentration-time courses for each patient and
+%   computes important PK metrics (AUC, Cavg, and Cmax) from them. It then
+%   performs a series of pairwise 2-sample t-tests between oral and lung
+%   dosing methods for each metric in order to determine if a statistically
+%   significant difference exists between the two, recording the resulting
+%   p-value and effect size.
+%
+% INPUTS:
+% - drug (str): An all-caps three-letter identifier of the relevant drug
+% - compt_list (str array): A list of all compartments for the model
+% - relevant_compts (str array): A list of all compartments for which
+%   metrics are to be calculated and analyzed
+% - odose (int): The oral dose amt. of the drug (in mg)
+% - odose_freq (int): The number of times per day an oral dose is to be
+%   administered
+% - ldose (int): The lung dose amt. of the drug (in mg)
+% - ldose_freq (int): The number of times per day an inhaled/lung dose
+%   is to be administered
+% - n_days (int): The number of days for which concentration-time courses
+%   have been calculated
+% - tstep (double): The time interval at which each concentration-time
+%   course is calculated for
+% - ts (double array): Contains the timepoints at which each concentration
+%   is calculated and plotted
+% - n_pts (int): The number of patients for which concentration-time
+%   courses have been calculated
+% - Cs_oral (cell array): Contains full concentration courses for each
+%   patient as matrices whose columns represent different compartments for 
+%   an oral dose of medication
+% - Cs_lung (cell array): Contains full concentration courses for each
+%   patient as matrices whose columns represent different compartments for 
+%   a lung dose of medication
+%
+% OUTPUTS:
+% - AUCs_oral_store (cell array): Contains AUCs for all patients given an 
+%   oral dose in each cell, with each cell representing a different 
+%   compartment
+% - AUCs_lung_store (cell array): Contains AUCs for all patients given a 
+%   lung dose in each cell, with each cell representing a different 
+%   compartment
+% - Cmaxs_oral_store (cell array): Contains Cmaxs for all patients given an 
+%   oral dose in each cell, with each cell representing a different 
+%   compartment
+% - Cmaxs_lung_store (cell array): Contains Cmaxs for all patients given a
+%   lung dose in each cell, with each cell representing a different 
+%   compartment
+%
+% FILES GENERATED:
+% - popPK_metric_analysis.xlsx: Contains the means and standard deviations
+%   for each PK metric in each compartment Also contains the p-value and
+%   effect size from each t-test between oral and lung dosing methods.
+
 
 %% Set up cell array formatting
-cells_store = cell(1, length(compts_to_plot));
+cells_store = cell(1, length(relevant_compts));
 tbl_format = cell(11, 4);
 
-tbl_format{1, 1} = append("Day ", num2str(days));
+tbl_format{1, 1} = append("Day ", num2str(n_days), ", n = ", num2str(n_pts));
 
 tbl_format{2, 1} = "Oral Dose";
 tbl_format{3, 1} = append(num2str(odose), " mg, ", num2str(odose_freq), " x/day");
@@ -30,29 +84,35 @@ tbl_format{1, 4} = "SD";
 tbl_format{8, 3} = "p-value";
 tbl_format{8, 4} = "Effect Size";
 
-last_day_start = length(t) - 24 / params{14} + 1;
+last_day_start = length(ts) - 24 / tstep + 1;
+
+% set up arrays to store metrics for each compartment to return
+AUCs_oral_store = cell(1, length(relevant_compts));
+AUCs_lung_store = cell(1, length(relevant_compts));
+Cmaxs_oral_store = cell(1, length(relevant_compts));
+Cmaxs_lung_store = cell(1, length(relevant_compts));
 
 
 %% Iterate through compartments
-for compt_idx = 1:length(compts_to_plot)
+for compt_idx = 1:length(relevant_compts)
 
-    current_compt = compts_to_plot{compt_idx};
+    current_compt = relevant_compts{compt_idx};
     current_cell = tbl_format;
     [idx_to_calc, ~] = find(string(compt_list) == current_compt);
 
     % pull compt specific timecourses
-    current_cs_oral = cell2mat(cellfun(@(x) x(:, idx_to_calc), Cs_oral, "UniformOutput", false));
-    current_cs_lung = cell2mat(cellfun(@(x) x(:, idx_to_calc), Cs_lung, "UniformOutput", false));
+    current_Cs_oral = cell2mat(cellfun(@(x) x(:, idx_to_calc), Cs_oral, "UniformOutput", false));
+    current_Cs_lung = cell2mat(cellfun(@(x) x(:, idx_to_calc), Cs_lung, "UniformOutput", false));
 
     % calculate metrics
-    AUCs_oral = trapz(t(last_day_start:end), current_cs_oral(last_day_start:end, :));
-    AUCs_lung = trapz(t(last_day_start:end), current_cs_lung(last_day_start:end, :));
+    AUCs_oral = trapz(ts(last_day_start:end), current_Cs_oral(last_day_start:end, :));
+    AUCs_lung = trapz(ts(last_day_start:end), current_Cs_lung(last_day_start:end, :));
 
-    Cavgs_oral = mean(current_cs_oral(last_day_start:end, :));
-    Cavgs_lung = mean(current_cs_lung(last_day_start:end, :));
+    Cavgs_oral = mean(current_Cs_oral(last_day_start:end, :));
+    Cavgs_lung = mean(current_Cs_lung(last_day_start:end, :));
 
-    Cmaxs_oral = max(current_cs_oral(last_day_start:end, :));
-    Cmaxs_lung = max(current_cs_lung(last_day_start:end, :));
+    Cmaxs_oral = max(current_Cs_oral(last_day_start:end, :));
+    Cmaxs_lung = max(current_Cs_lung(last_day_start:end, :));
 
     % calculate metric info for comparison
     AUCs_oral_mean  = mean(AUCs_oral);
@@ -121,7 +181,7 @@ for compt_idx = 1:length(compts_to_plot)
     [~, Cavg_p] = ttest(Cavgs_oral, Cavgs_lung);
     [~, Cmax_p] = ttest(Cmaxs_oral, Cmaxs_lung);
 
-    % record info
+    % record results
     % means
     current_cell{2, 3} = round(AUCs_oral_mean, 2);
     current_cell{3, 3} = round(Cavgs_oral_mean, 2);
@@ -149,12 +209,20 @@ for compt_idx = 1:length(compts_to_plot)
 
     cells_store{compt_idx} = current_cell;
 
+    % store metrics
+    AUCs_oral_store{compt_idx} = AUCs_oral;
+    AUCs_lung_store{compt_idx} = AUCs_lung;
+    Cmaxs_oral_store{compt_idx} = Cmaxs_oral;
+    Cmaxs_lung_store{compt_idx} = Cmaxs_lung;
+
 end
 
 
 %% Write output file
-for compt_idx = 1:length(compts_to_plot)
-    writecell(cells_store{compt_idx}, append("Outputs/popPK_analysis_day", num2str(days), ".xlsx"), "Sheet", compts_to_plot{compt_idx});
+for compt_idx = 1:length(relevant_compts)
+    writecell(cells_store{compt_idx}, ...
+        append("Outputs/", drug, "/Tables/popPK_metric_analysis.xlsx"), ...
+        "Sheet", relevant_compts{compt_idx});
 end
 
 
