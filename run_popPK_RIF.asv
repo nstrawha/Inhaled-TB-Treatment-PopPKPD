@@ -39,7 +39,7 @@ addpath("Methods/");
 
 % modeling parameters
 n_pts_RIF = 1000;
-n_days_RIF = 4; % > 3 is steady state
+n_days_RIF = 4;
 days_to_plot_RIF = 1;
 relevant_compts_RIF = {"Lung"};
 
@@ -207,3 +207,57 @@ plotPTAs("RIF", nontoxic_compts_RIF, ...
             oral_dose_RIF, oral_dose_freq_RIF, ...
             lung_dose_RIF, lung_dose_freq_RIF, ...
             n_pts_RIF, n_days_RIF);
+
+
+
+
+
+
+
+
+
+
+%% TEMP: check param variation
+
+function mat = struct2mat(structArray, fieldNames)
+    % Convert struct array to numeric matrix by extracting fields in fieldNames
+    n = numel(structArray);
+    m = numel(fieldNames);
+    mat = zeros(n, m);
+    for i = 1:n
+        for j = 1:m
+            mat(i,j) = structArray(i).(fieldNames{j});
+        end
+    end
+end
+
+physparams = cellfun(@(x) x(8), param_store_RIF);
+vparams = cellfun(@(x) x.V, physparams);
+
+bw_vec = (arrayfun(@(s) s.BW, vparams))';
+
+frac_V_fields = {'Lu', 'Brain', 'Heart', 'Adipose', 'Muscle', 'Skin', 'Kidney', ...
+                 'Bone', 'Spleen', 'Gut', 'Liver', 'Others', 'Pl'};
+
+frac_structs = arrayfun(@(s) rmfield(s, setdiff(fieldnames(s), frac_V_fields)), current_Vs);
+frac_matrix = struct2mat(frac_structs, frac_V_fields);
+
+frac_matrix = frac_matrix ./ bw_vec;
+mean(frac_matrix)
+
+temp_col = frac_matrix(:, 2);
+temp_PD = vol_frac_PDs_RIF{2};
+
+figure();
+hold on;
+
+num_bins = 30;
+histogram(temp_col, num_bins, 'Normalization', 'pdf');
+
+x_vals = linspace(min(temp_col), max(temp_col), 200);
+y_vals = pdf(temp_PD, x_vals);
+plot(x_vals, y_vals, 'LineWidth', 2, 'Color', 'r');
+
+mean
+    
+hold off;

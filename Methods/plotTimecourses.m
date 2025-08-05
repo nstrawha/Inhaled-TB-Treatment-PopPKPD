@@ -57,6 +57,10 @@ nexttile
 plot(ts, Cs_oraldose, ...
     "LineWidth", 0.5);
 
+% area(ts, Cs_oraldose, ...
+%    "LineWidth", 0.5, ...
+%    "FaceColor", "#AECCE4");
+
 xlim([(n_days - 1 * days_to_plot) * 24, n_days * 24]);
 title(append("Oral Dose (", num2str(oral_dose), " mg, ", num2str(oral_dose_freq), "x/day)"));
 set(gca,'FontSize', 12);
@@ -66,6 +70,10 @@ grid on;
 nexttile
 plot(ts, Cs_lungdose, ...
     "LineWidth", 0.5);
+
+% area(ts, Cs_lungdose, ...
+%    "LineWidth", 0.5, ...
+%    "FaceColor", "#E78587");
 
 xlim([(n_days - 1 * days_to_plot) * 24, n_days * 24]);
 title(append("Lung Dose (", num2str(lung_dose), " mg, ", num2str(lung_dose_freq), "x/day)"));

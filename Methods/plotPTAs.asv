@@ -58,18 +58,17 @@ MIC_PD = fitdist(dummy_data, "Lognormal");
 
 fig = figure();
 
-scatter(concs, isolates, 75, ...
+histogram(dummy_data, "Normalization", "pdf", ...
     "DisplayName", "MIC Distribution (Normalized)", ...
-    "MarkerFaceColor", "Black", ...
-    "MarkerEdgeColor", "Black");
+    "FaceColor", "Black", ...
+    "EdgeColor", "Black");
 
 yline(0, "LineWidth", 2, "HandleVisibility", "off");
 xlim([0.008, max(MICs_to_test)]);
-% ylim([-0.05, 1.05]);
 
-set(gca, "XScale", "log");
-xlabel("Minimum Inhibitory Concentration (MIC)");
-ylabel("Number of Isolates Inhibited");
+% set(gca, "XScale", "log");
+xlabel("Minimum Inhibitory Concentration (\mug/mL)");
+ylabel("Probability of Target Attainment (PTA)");
 
 title(append(drug, "/TB MIC Distribution"), "FontSize", 20);
 

@@ -1,10 +1,10 @@
 function [AUCs_oral_store, AUCs_lung_store, Cmaxs_oral_store, Cmaxs_lung_store] = trackPKMetrics(drug, compt_list, relevant_compts, toxic_compts, odose, odose_freq, ldose, ldose_freq, n_days, tstep, ts, n_pts, Cs_oral, Cs_lung)
-% TRACKPKMETRICS - Records, analyzes, and stores AUC, Cavg, and Cmax for a
+% TRACKPKMETRICS - Records, analyzes, and stores AUC and Cmax for a
 % comparison between oral and lung dosing methods.
 %
 % DESCRIPTION:
 %   This function takes the concentration-time courses for each patient and
-%   computes important PK metrics (AUC, Cavg, and Cmax) from them. It then
+%   computes important PK metrics (AUC and Cmax) from them. It then
 %   performs a series of pairwise 2-sample t-tests between oral and lung
 %   dosing methods for each metric in order to determine if a statistically
 %   significant difference exists between the two, recording the resulting
@@ -58,31 +58,28 @@ function [AUCs_oral_store, AUCs_lung_store, Cmaxs_oral_store, Cmaxs_lung_store] 
 
 %% Set up cell array formatting
 cells_store = cell(1, length(relevant_compts));
-tbl_format = cell(11, 4);
+tbl_format = cell(8, 4);
 
 tbl_format{1, 1} = append("Day ", num2str(n_days), ", n = ", num2str(n_pts));
 
 tbl_format{2, 1} = "Oral Dose";
 tbl_format{3, 1} = append(num2str(odose), " mg, ", num2str(odose_freq), " x/day");
-tbl_format{5, 1} = "Lung Dose";
-tbl_format{6, 1} = append(num2str(ldose), " mg, ", num2str(ldose_freq), " x/day");
-tbl_format{9, 1} = "Better Dose";
+tbl_format{4, 1} = "Lung Dose";
+tbl_format{5, 1} = append(num2str(ldose), " mg, ", num2str(ldose_freq), " x/day");
+tbl_format{7, 1} = "Better Dose";
 
 tbl_format{1, 2} = "Metric Type";
 tbl_format{2, 2} = "AUC_24";
-tbl_format{3, 2} = "C_avg (ug/mL)";
-tbl_format{4, 2} = "C_max (ug/mL)";
-tbl_format{5, 2} = "AUC_24";
-tbl_format{6, 2} = "C_avg, (ug/mL)";
-tbl_format{7, 2} = "C_max (ug/mL)";
-tbl_format{9, 2} = "AUC_24";
-tbl_format{10, 2} = "C_avg (ug/mL)";
-tbl_format{11, 2} = "C_max (ug/mL)";
+tbl_format{3, 2} = "C_max (ug/mL)";
+tbl_format{4, 2} = "AUC_24";
+tbl_format{5, 2} = "C_max (ug/mL)";
+tbl_format{7, 2} = "AUC_24";
+tbl_format{8, 2} = "C_max (ug/mL)";
 
 tbl_format{1, 3} = "Mean";
 tbl_format{1, 4} = "SD";
-tbl_format{8, 3} = "p-value";
-tbl_format{8, 4} = "Effect Size";
+tbl_format{6, 3} = "p-value";
+tbl_format{6, 4} = "Effect Size";
 
 last_day_start = length(ts) - 24 / tstep + 1;
 
@@ -108,9 +105,6 @@ for compt_idx = 1:length(relevant_compts)
     AUCs_oral = trapz(ts(last_day_start:end), current_Cs_oral(last_day_start:end, :));
     AUCs_lung = trapz(ts(last_day_start:end), current_Cs_lung(last_day_start:end, :));
 
-    Cavgs_oral = mean(current_Cs_oral(last_day_start:end, :));
-    Cavgs_lung = mean(current_Cs_lung(last_day_start:end, :));
-
     Cmaxs_oral = max(current_Cs_oral(last_day_start:end, :));
     Cmaxs_lung = max(current_Cs_lung(last_day_start:end, :));
 
@@ -119,11 +113,6 @@ for compt_idx = 1:length(relevant_compts)
     AUCs_oral_sd    = std(AUCs_oral);
     AUCs_lung_mean  = mean(AUCs_lung);
     AUCs_lung_sd    = std(AUCs_lung);
-
-    Cavgs_oral_mean  = mean(Cavgs_oral);
-    Cavgs_oral_sd    = std(Cavgs_oral);
-    Cavgs_lung_mean  = mean(Cavgs_lung);
-    Cavgs_lung_sd    = std(Cavgs_lung);
 
     Cmaxs_oral_mean  = mean(Cmaxs_oral);
     Cmaxs_oral_sd    = std(Cmaxs_oral);
@@ -139,12 +128,6 @@ for compt_idx = 1:length(relevant_compts)
             better_AUC = "Lung";
         end
 
-        if Cavgs_oral_mean >= Cavgs_lung_mean
-            better_Cavg = "Oral";
-        else
-            better_Cavg = "Lung";
-        end
-
         if Cmaxs_oral_mean >= Cmaxs_lung_mean
             better_Cmax = "Oral";
         else
@@ -158,12 +141,6 @@ for compt_idx = 1:length(relevant_compts)
             better_AUC = "Oral";
         end
 
-        if Cavgs_oral_mean > Cavgs_lung_mean
-            better_Cavg = "Lung";
-        else
-            better_Cavg = "Oral";
-        end
-
         if Cmaxs_oral_mean > Cmaxs_lung_mean
             better_Cmax = "Lung";
         else
@@ -173,39 +150,31 @@ for compt_idx = 1:length(relevant_compts)
 
     % calculate effect sizes 
     AUCs_effsize  = meanEffectSize(AUCs_oral, AUCs_lung);
-    Cavgs_effsize = meanEffectSize(Cavgs_oral, Cavgs_lung);
     Cmaxs_effsize = meanEffectSize(Cmaxs_oral, Cmaxs_lung);
 
     % perform hypothesis tests
     [~, AUC_p]  = ttest(AUCs_oral, AUCs_lung);
-    [~, Cavg_p] = ttest(Cavgs_oral, Cavgs_lung);
     [~, Cmax_p] = ttest(Cmaxs_oral, Cmaxs_lung);
 
     % record results
     % means
     current_cell{2, 3} = round(AUCs_oral_mean, 2);
-    current_cell{3, 3} = round(Cavgs_oral_mean, 2);
-    current_cell{4, 3} = round(Cmaxs_oral_mean, 2);
-    current_cell{5, 3} = round(AUCs_lung_mean, 2);
-    current_cell{6, 3} = round(Cavgs_lung_mean, 2);
-    current_cell{7, 3} = round(Cmaxs_lung_mean, 2);
+    current_cell{3, 3} = round(Cmaxs_oral_mean, 2);
+    current_cell{4, 3} = round(AUCs_lung_mean, 2);
+    current_cell{5, 3} = round(Cmaxs_lung_mean, 2);
 
     % SDs
     current_cell{2, 4} = round(AUCs_oral_sd, 2);
-    current_cell{3, 4} = round(Cavgs_oral_sd, 2);
-    current_cell{4, 4} = round(Cmaxs_oral_sd, 2);
-    current_cell{5, 4} = round(AUCs_lung_sd, 2);
-    current_cell{6, 4} = round(Cavgs_lung_sd, 2);
-    current_cell{7, 4} = round(Cmaxs_lung_sd, 2);
+    current_cell{3, 4} = round(Cmaxs_oral_sd, 2);
+    current_cell{4, 4} = round(AUCs_lung_sd, 2);
+    current_cell{5, 4} = round(Cmaxs_lung_sd, 2);
 
     % tests
-    current_cell{9, 3}  = append(better_AUC, ", p = ", num2str(AUC_p));
-    current_cell{10, 3} = append(better_Cavg, ", p = ", num2str(Cavg_p));
-    current_cell{11, 3} = append(better_Cmax, ", p = ", num2str(Cmax_p, 3));
+    current_cell{7, 3}  = append(better_AUC, ", p = ", num2str(AUC_p));
+    current_cell{8, 3} = append(better_Cmax, ", p = ", num2str(Cmax_p, 3));
 
-    current_cell{9, 4}  = abs(round(AUCs_effsize.Effect, 2));
-    current_cell{10, 4} = abs(round(Cavgs_effsize.Effect, 2));
-    current_cell{11, 4} = abs(round(Cmaxs_effsize.Effect, 2));
+    current_cell{7, 4}  = abs(round(AUCs_effsize.Effect, 2));
+    current_cell{8, 4} = abs(round(Cmaxs_effsize.Effect, 2));
 
     cells_store{compt_idx} = current_cell;
 
@@ -214,6 +183,78 @@ for compt_idx = 1:length(relevant_compts)
     AUCs_lung_store{compt_idx} = AUCs_lung;
     Cmaxs_oral_store{compt_idx} = Cmaxs_oral;
     Cmaxs_lung_store{compt_idx} = Cmaxs_lung;
+
+    % plotting
+    fig = figure();
+    tiledlayout(1, 2);
+
+    % AUC
+    nexttile
+    hold on;
+    current_bar = bar(1:2, [AUCs_oral_mean, AUCs_lung_mean], 0.5);
+    current_bar.FaceColor = "flat";
+    current_bar.CData(1, :) = [0 0 1];
+    current_bar.CData(2, :) = [1 0 0];
+        
+    bar_heights = [AUCs_oral_mean, AUCs_lung_mean];
+    label_text = append("Effect size: ", num2str(-round(AUCs_effsize.Effect, 2)));
+    text(2, bar_heights(2) + 1.25, label_text, ...
+        'HorizontalAlignment', 'center', ...
+        'FontSize', 10, ...
+        'FontWeight', 'bold');
+
+    errorbar(1:2, [AUCs_oral_mean, AUCs_lung_mean], ...
+                                [AUCs_oral_sd ./ sqrt(n_pts), AUCs_lung_sd ./ sqrt(n_pts)], ...
+                                "LineStyle", "none", ...
+                                "LineWidth", 0.75, ...
+                                "Color", "Black", ...
+                                "CapSize", 25);
+
+    lower_AUC = min([AUCs_oral_mean, AUCs_lung_mean]);
+    higher_AUC = max([AUCs_oral_mean, AUCs_lung_mean]);
+    ylims = [floor(lower_AUC / 5) * 5 - 1, ceil(higher_AUC / 5) * 5 + 1];
+    ylim(ylims);
+    xticks(1:2)
+    xticklabels(["Oral Dose", "Lung Dose"]);
+    ylabel("AUC (\mug*h/L)")
+    title("AUC", "FontSize", 15);
+    hold off;
+
+    % Cmax
+    nexttile
+    hold on;
+    current_bar = bar(1:2, [Cmaxs_oral_mean, Cmaxs_lung_mean], 0.5);
+    current_bar.FaceColor = "flat";
+    current_bar.CData(1, :) = [0 0 1];
+    current_bar.CData(2, :) = [1 0 0];
+
+    bar_heights = [Cmaxs_oral_mean, Cmaxs_lung_mean];
+    label_text = append("Effect size: ", num2str(-round(Cmaxs_effsize.Effect, 2)));
+    text(2, bar_heights(2) + 1.25, label_text, ...
+        'HorizontalAlignment', 'center', ...
+        'FontSize', 10, ...
+        'FontWeight', 'bold');
+
+    errorbar(1:2, [Cmaxs_oral_mean, Cmaxs_lung_mean], ...
+                                [Cmaxs_oral_sd ./ sqrt(n_pts), Cmaxs_lung_sd ./ sqrt(n_pts)], ...
+                                "LineStyle", "none", ...
+                                "LineWidth", 0.75, ...
+                                "Color", "Black", ...
+                                "CapSize", 25);
+
+    lower_Cmax = min([Cmaxs_oral_mean, Cmaxs_lung_mean]);
+    higher_Cmax = max([Cmaxs_oral_mean, Cmaxs_lung_mean]);
+    ylims = [floor(lower_Cmax) - 5, ceil(higher_Cmax) + 5];
+    ylim(ylims);
+    xticks(1:2)
+    xticklabels(["Oral Dose", "Lung Dose"]);
+    ylabel("C_{max} (\mug/L)")
+    title("C_{max}", "FontSize", 15);
+    hold off;
+
+    sgtitle(append("PK Metric Comparison for ", current_compt, " Compartment"), "FontSize", 20);
+
+    saveas(fig, append("Outputs/", drug, "/Figures/", current_compt, "_metric_comparisons.png"))
 
 end
 
@@ -224,6 +265,5 @@ for compt_idx = 1:length(relevant_compts)
         append("Outputs/", drug, "/Tables/popPK_metric_analysis.xlsx"), ...
         "Sheet", relevant_compts{compt_idx});
 end
-
-
+     writecell(cells_store{compt_idx}, append("Outputs/", drug, "/Tables/popPK_analysis_day", num2str(n_days), ".xlsx"), "Sheet", relevant_compts{compt_idx});
 end

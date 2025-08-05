@@ -4,7 +4,7 @@
 %   Adaptation of run_popPK_RIF intended to compare dosing regimens. 
 %   100-1000 mg amounts of inhaled rifampin are compared in 50 mg 
 %   increments, with frequencies of 1-4 x/day, to the standard oral dose of
-%   600 mg 1x/day. Measures resulting AUC_24, C_avg, and C_max for each 
+%   600 mg 1x/day. Measures resulting AUC_24 and C_max for each 
 %   regimen.
 %
 % PLOTS GENERATED:
@@ -21,16 +21,16 @@ clc;
 clearvars;
 
 addpath("Oral_Dose_ODEs/");
-addpath("Lung_Dose_ODEs/");
+addpath("Lung_Dose_ODEs/"); % TODO alter dirs
 addpath("Methods/");
 
 
 %% Set parameters
 
 % Modeling parameters
-n_days_RIF = 8;
+n_days_RIF = 4;
 days_to_plot_RIF = 1;
-relevant_compts_RIF = {"Lung", "Plasma", "Pleura", "Lymph Node", "Liver", "Kidney"};
+relevant_compts_RIF = {"Lung", "Liver"};
 tstep_RIF = 0.01;
 
 % Dosing regimen info
@@ -82,12 +82,11 @@ ncompts_total_RIF = length(compt_list_RIF);
 toxic_compts_RIF = ["Liver", "Kidney"];
 
 % sample physiological parameters
-[vol_PDs_RIF, vol_frac_PDs_RIF, ...
-    flow_PDs_RIF, flow_frac_PDs_RIF] = getParamPDs(0.2, 0.3); % CVs from Lyons et al.
+[bw_PD, vol_PDs_RIF, vol_frac_PDs_RIF, ...
+    qc_PD, flow_PDs_RIF, flow_frac_PDs_RIF] = getParamPDsRIF(0.2, 0.3); % CVs from Lyons et al.
 
-[phys_RIF, pt_RIF]  = loadPhysParams("RIF", vol_PDs_RIF, vol_frac_PDs_RIF, ...
-                                        flow_PDs_RIF, flow_frac_PDs_RIF, ...
-                                        0); % unfixed weight
+[phys_RIF, pt_RIF]  = loadPhysParamsRIF("RIF", bw_PD, vol_PDs_RIF, vol_frac_PDs_RIF, ...
+                                        qc_PD, flow_PDs_RIF, flow_frac_PDs_RIF);
 
 
 %% Solve oral equations
@@ -163,7 +162,6 @@ end
 
 % set up storage
 AUCs_store_RIF  = cell(1, length(relevant_compts_RIF));
-Cavgs_store_RIF = cell(1, length(relevant_compts_RIF));
 Cmaxs_store_RIF = cell(1, length(relevant_compts_RIF));
 
 last_day_start = length(ts_RIF) - 24 / tstep_RIF + 1;
@@ -180,20 +178,15 @@ for compt_idx = 1:length(relevant_compts_RIF)
     oral_AUC  = trapz(ts_RIF(last_day_start:end), current_Cs_oral(last_day_start:end, :));
     lung_AUCs = trapz(ts_RIF(last_day_start:end), current_Cs_lung(last_day_start:end, :));
 
-    oral_Cavg  = mean(current_Cs_oral(last_day_start:end, :));
-    lung_Cavgs = mean(current_Cs_lung(last_day_start:end, :));
-
     oral_Cmax  = max(current_Cs_oral(last_day_start:end, :));
     lung_Cmaxs = max(current_Cs_lung(last_day_start:end, :));
 
     % calculate percent differences
     AUC_percs_higher  = (lung_AUCs - oral_AUC) ./ oral_AUC .* 100;
-    Cavg_percs_higher = (lung_Cavgs - oral_Cavg) ./ oral_Cavg .* 100;
     Cmax_percs_higher = (lung_Cmaxs - oral_Cmax) ./ oral_Cmax .* 100;
 
     % store results
     AUCs_store_RIF{compt_idx}  = AUC_percs_higher;
-    Cavgs_store_RIF{compt_idx} = Cavg_percs_higher;
     Cmaxs_store_RIF{compt_idx} = Cmax_percs_higher;
 
 end
@@ -205,15 +198,12 @@ for compt_idx = 1:length(relevant_compts_RIF)
     current_AUC_percs = AUCs_store_RIF{compt_idx};
     current_AUC_percs = reshape(current_AUC_percs, length(lung_doses_RIF), length(dose_freqs_RIF));
 
-    current_Cavg_percs = Cavgs_store_RIF{compt_idx};
-    current_Cavg_percs = reshape(current_Cavg_percs, length(lung_doses_RIF), length(dose_freqs_RIF));
-
     current_Cmax_percs = Cmaxs_store_RIF{compt_idx};
     current_Cmax_percs = reshape(current_Cmax_percs, length(lung_doses_RIF), length(dose_freqs_RIF));
 
     % create plot
     fig = figure();
-    tlayout = tiledlayout(1, 3);
+    tlayout = tiledlayout(1, 2);
     [freqplot, doseplot] = meshgrid(dose_freqs_RIF, lung_doses_RIF);
     contour_levels_RIF = -1000:50:1000;
 
@@ -222,14 +212,6 @@ for compt_idx = 1:length(relevant_compts_RIF)
     [C_temp, h_temp] = contour(freqplot, doseplot, current_AUC_percs, contour_levels_RIF);
     clabel(C_temp, h_temp)
     title("AUC")
-    set(gca, "xtick", dose_freqs_RIF)
-    set(gca, "ytick", lung_doses_RIF)
-
-    % Cavg
-    nexttile
-    [C_temp, h_temp] = contour(freqplot, doseplot, current_Cavg_percs, contour_levels_RIF);
-    clabel(C_temp, h_temp)
-    title("C_{avg}")
     set(gca, "xtick", dose_freqs_RIF)
     set(gca, "ytick", lung_doses_RIF)
 
@@ -254,19 +236,17 @@ end
 
 %% TODO: Write output file
 
-metrics_RIF = ["AUC", "Cavg", "Cmax"];
+metrics_RIF = ["AUC", "Cmax"];
 labels_RIF =   ["AUC_24; % Higher than Oral Dose", ...
-                "Cavg; % Higher than Oral Dose", ...
                 "Cmax; % Higher than Oral Dose"];
 
 % reshape all comparison arrays
 for compt_idx = 1:length(relevant_compts_RIF)
     AUCs_store_RIF{compt_idx}  = reshape(AUCs_store_RIF{compt_idx}, length(lung_doses_RIF), length(dose_freqs_RIF));
-    Cavgs_store_RIF{compt_idx} = reshape(Cavgs_store_RIF{compt_idx}, length(lung_doses_RIF), length(dose_freqs_RIF));
     Cmaxs_store_RIF{compt_idx} = reshape(Cmaxs_store_RIF{compt_idx}, length(lung_doses_RIF), length(dose_freqs_RIF));
 end
 
-all_metrics_store_RIF = {AUCs_store_RIF, Cavgs_store_RIF, Cmaxs_store_RIF};
+all_metrics_store_RIF = {AUCs_store_RIF, Cmaxs_store_RIF};
 
 % iterate through metric types
 for metric_idx = 1:length(all_metrics_store_RIF)

@@ -66,7 +66,7 @@ if drug == "RIF"
     % oral eqs
     for dose_idx = 1:(n_days * oral_dose_freq)
         
-        [~, Cs_oral_temp] = ode23s(@(t, C) RIF_oral_ODEs(t, C, ka_oral, kr, kF, ...
+        [~, Cs_oral_temp] = ode23s(@(t, C) RIFOralODEs(t, C, ka_oral, kr, kF, ...
                             CL, fR, phys, pt), timepts_oral, C0_oraldose, options);
         C0_oraldose = [Cs_oral_temp(end, 1:(ncompts_total - 1))'; 
                                     Cs_oral_temp(end, ncompts_total) + oral_dose];
@@ -81,7 +81,7 @@ if drug == "RIF"
     % lung eqs
     for dose_idx = 1:(n_days * lung_dose_freq)
         
-        [~, Cs_lung_temp] = ode23s(@(t, C) RIF_lung_ODEs(t, C, ka_lung, kr, kF, effRB, ...
+        [~, Cs_lung_temp] = ode23s(@(t, C) RIFLungODEs(t, C, ka_lung, kr, kF, effRB, ...
                             effRA, br_frac, CL, fR, phys, pt), timepts_lung, C0_lungdose, options);
         C0_lungdose = [Cs_lung_temp(end, 1:(ncompts_total - 1))'; 
                                     Cs_lung_temp(end, ncompts_total) + lung_dose];
