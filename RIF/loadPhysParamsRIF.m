@@ -1,4 +1,4 @@
-function [phys, pt] = loadPhysParamsRIF(drug, bw_PD, vol_PDs, vol_frac_PDs, qc_PD, flow_PDs, flow_frac_PDs)
+function all_params = loadPhysParamsRIF(bw_PD, vol_PDs, vol_frac_PDs, qc_PD, flow_PDs, flow_frac_PDs)
 % LOADPHYSPARAMS: Calculates random physiological parameter values based on
 % given probability distributions
 %
@@ -11,7 +11,6 @@ function [phys, pt] = loadPhysParamsRIF(drug, bw_PD, vol_PDs, vol_frac_PDs, qc_P
 %   sum is equal to 1.
 %
 % INPUTS:
-% - drug (str): An all-caps three-letter identifier of the relevant drug
 % - vol_PDs (cell array): Contains all probability distributions for raw
 %   volume parameters not based on body weight
 % - vol_frac_PDs (cell array): Contains all probability distributions for
@@ -20,15 +19,10 @@ function [phys, pt] = loadPhysParamsRIF(drug, bw_PD, vol_PDs, vol_frac_PDs, qc_P
 %   flow parameters not based on cardiac output
 % - flow_frac_PDs (cell array): Contains all probability distributions for
 %   flow parameters that are calculated as fractions of cardiac output
-% - fixed_weight (logical): Decides whether or not to sample weight as well
-%   (set to 1 when using population means in optimize_regimen_[drug], 0 
-%   otherwise)
 %
 % OUTPUTS:
-% - phys (struct): Contains all relevant patient physiological volume and 
-%   flow parameters
-% - pt (struct): Contains all relevant partition coefficients (not randomly
-%   sampled)
+% - all_params (cell array): Contains tables of compartment volume, blood
+%   flow, lymph flow, and partition coefficient parameters (in that order)
 
 
 %% Volumes
@@ -51,27 +45,32 @@ vfracs_sum = sum(rand_params_fracs);
 rand_params_fracs = rand_params_fracs / vfracs_sum;
 rand_params = [rand_params, rand_params_fracs .* BW];
 
-% unpack and place into struct
-phys.V.BW      = BW;
-phys.V.V       = rand_params(1);
-phys.V.A       = rand_params(2);
-phys.V.LN      = rand_params(3);
-phys.V.Lu      = rand_params(4);
-phys.V.Brain   = rand_params(5);
-phys.V.Heart   = rand_params(6);
-phys.V.Adipose = rand_params(7);
-phys.V.Muscle  = rand_params(8);
-phys.V.Skin    = rand_params(9);
-phys.V.Kidney  = rand_params(10);
-phys.V.Bone    = rand_params(11);
-phys.V.Spleen  = rand_params(12);
-phys.V.Gut     = rand_params(13);
-phys.V.Liver   = rand_params(14);
-phys.V.Others  = rand_params(15);
-phys.V.Pl      = rand_params(16);
-phys.V.fsum    = vfracs_sum; % record sum of fractions for downstream analysis
+% unpack and place into table
+BW          = BW;
+venblood    = rand_params(1);
+artblood    = rand_params(2);
+lymph       = rand_params(3);
+lung        = rand_params(4);
+brain       = rand_params(5);
+heart       = rand_params(6);
+adipose     = rand_params(7);
+muscle      = rand_params(8);
+skin        = rand_params(9);
+kidney      = rand_params(10);
+bone        = rand_params(11);
+spleen      = rand_params(12);
+gut         = rand_params(13);
+liver       = rand_params(14);
+other      = rand_params(15);
+pleura      = rand_params(16);
+fracsum     = vfracs_sum; % record sum of fractions for downstream analysis
 
-%% Flows
+vol_table = table(BW, venblood, artblood, lymph, ...
+                    lung, brain, heart, adipose, muscle, ...
+                    skin, kidney, bone, spleen, gut, ...
+                    liver, other, pleura, fracsum);
+
+%% Blood flows
 
 QC = random(qc_PD);
 
@@ -91,64 +90,79 @@ qfracs_sum = sum(rand_params_fracs);
 rand_params_fracs = rand_params_fracs / qfracs_sum;
 rand_params = [rand_params, rand_params_fracs .* QC];
 
-% unpack and place intro struct
-phys.Q.total = QC;
+% unpack and place into table
+QC         = QC;
+ka         = rand_params(1);
+kdiss      = rand_params(2);
+fR         = rand_params(3);
+kF         = rand_params(4);
+kr         = rand_params(5);
+CL         = rand_params(6);
+pleura     = rand_params(7);
+bELF       = rand_params(8);
+aELF       = rand_params(9);
+artblood   = rand_params(10);
+spleen     = rand_params(11);
+gut        = rand_params(12);
+brain      = rand_params(13);
+heart      = rand_params(14);
+adipose    = rand_params(15);
+muscle     = rand_params(16);
+bone       = rand_params(17);
+skin       = rand_params(18);
+other      = rand_params(19);
+kidney     = rand_params(20);
+liver      = spleen + gut + artblood;
+fracsum    = qfracs_sum; % record sum of fractions for downstream analysis
 
-phys.Q.QC   = QC;
-phys.Q.Pl   = rand_params(1);
-phys.Q.bELF = rand_params(2);
-phys.Q.aELF = rand_params(3);
-phys.Q.LA   = rand_params(4);
-phys.Q.Sp   = rand_params(5);
-phys.Q.Gu   = rand_params(6);
-phys.Q.Br   = rand_params(7);
-phys.Q.Hr   = rand_params(8);
-phys.Q.Ad   = rand_params(9);
-phys.Q.Mu   = rand_params(10);
-phys.Q.Bo   = rand_params(11);
-phys.Q.Sk   = rand_params(12);
-phys.Q.Oth  = rand_params(13);
-phys.Q.Kd   = rand_params(14);
-phys.Q.Li   = phys.Q.Sp + phys.Q.Gu + phys.Q.LA;
-phys.Q.fsum = qfracs_sum; % record sum of fractions for downstream analysis
+flow_table = table(QC, ka, kdiss, fR, kF, kr, ...
+                    CL, pleura, bELF, aELF, ...
+                    artblood, spleen, gut, brain, ...
+                    heart, adipose, muscle, bone, skin, ...
+                    other, kidney, liver, fracsum);
 
 
 %% Lymph flow in L/h
-lymph_total = 8 / 24; % L/day to L/h
-phys.L.Lu   = lymph_total * 0.03;
-phys.L.Br   = lymph_total * 0.0105;
-phys.L.Hr   = lymph_total * 0.01;
-phys.L.Ad   = lymph_total * 0.128;
-phys.L.Mu   = lymph_total * 0.16;
-phys.L.Bo   = 0;
-phys.L.Sk   = lymph_total * 0.0703;
-phys.L.Oth  = lymph_total * 0.0562;
-phys.L.Kd   = lymph_total * 0.085;
-phys.L.Li   = lymph_total * 0.33;
-phys.L.Sp   = 0;
-phys.L.Gu   = lymph_total * 0.12;
-phys.L.LN   = lymph_total;
+lymph     = 8/24; % L/day to L/h
+lung      = lymph * 0.03;
+brain     = lymph * 0.0105;
+heart     = lymph * 0.01;
+adipose   = lymph * 0.128;
+muscle    = lymph * 0.16;
+bone      = 0;
+skin      = lymph * 0.0703;
+other     = lymph * 0.0562;
+kidney    = lymph * 0.085;
+liver     = lymph * 0.33;
+spleen    = 0;
+gut       = lymph * 0.12;
+
+lflow_table = table(lymph, lung, brain, heart, ...
+                    adipose, muscle, bone, skin, ...
+                    other, kidney, liver, spleen, ...
+                    gut);
 
 %% Partition coefficients
-if strcmpi(drug, "RIF")
-    pt.Lu             = 1.7115;
-    pt.LN             = 1.2081;
-    pt.Tissue.Brain   = 0.2285;
-    pt.Tissue.Adipose = 0.1885;
-    pt.Tissue.Heart   = 1.0158;
-    pt.Tissue.Muscle  = 0.6949;
-    pt.Tissue.Skin    = 0.6265;
-    pt.Tissue.Others  = 1.047;
-    pt.Tissue.Bone    = 0.3157;
-    pt.Tissue.Spleen  = 1.3950;
-    pt.Tissue.Kidney  = 2.1725;
-    pt.Tissue.Gut     = 1.0781;
-    pt.Tissue.Liver   = 1.9646;
+lung    = 1.7115;
+lymph   = 1.2081;
+brain   = 0.2285;
+adipose = 0.1885;
+heart   = 1.0158;
+muscle  = 0.6949;
+skin    = 0.6265;
+other  = 1.047;
+bone    = 0.3157;
+spleen  = 1.3950;
+kidney  = 2.1725;
+gut     = 1.0781;
+liver   = 1.9646;
 
-else
-    error('Partition coefficients for %s not defined.', drug);
+ptc_table = table(lung, lymph, brain, adipose, heart, ...
+                    muscle, skin, other, bone, spleen, ...
+                    kidney, gut, liver);
 
-end
+% package all param tables into cell array
+all_params = {vol_table, flow_table, lflow_table, ptc_table};
 
 
 end

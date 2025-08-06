@@ -1,15 +1,18 @@
 % test script to analyze distributions of params based on AUC percentiles
 % to be run after run_pop_PK_RIF.m with one relevant compt
 
-%% TODO: Options for analysis
+%% Options for analysis
 
 plot_hists = false;         % plot hists of AUCs and Cmaxs
-params_regression = false;  % run regression for AUCs for all params
+
+params_regression = true;  % run regression for AUCs for all params
+r_cutoff = 0.0; % correlation coeff. past which to plot regressions
+
 sum_effsize = true;         % run regression for the sum of all volume and flow eff sizes
 
-r_cutoff = 0.3; % correlation coeff. past which to plot regressions
 
 %% Helper function
+
 % convert struct array to numeric matrix by extracting fields in fieldNames
 function mat = struct2mat(structArray, fieldNames)
     n = numel(structArray);

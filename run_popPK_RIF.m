@@ -37,9 +37,9 @@ addpath("Methods/");
 
 %% Set parameters
 
-% modeling parameters
+% fixed model parameters
 n_pts_RIF = 1000;
-n_days_RIF = 4; % > 3 is steady state
+n_days_RIF = 1; % > 3 is steady state
 days_to_plot_RIF = 1;
 relevant_compts_RIF = {"Lung"};
 
@@ -48,20 +48,12 @@ lung_dose_RIF = 600;    % mg
 oral_dose_freq_RIF = 1; % doses/day
 lung_dose_freq_RIF = 1; % doses/day
 
+br_frac_RIF = 9/49;     % proportion of RIF absorbed by bronchi from Himstedt et al.
+
 tstep_RIF = 0.01;
 
-% RIF-specific parameters
-ka_oral_RIF = 1.08;     % absorption rate [1/h]
-kdiss_lung_RIF = 50;    % dissolution rate [1/h] from Himstedt et al.
-kF_RIF = 0.252;         % gut transit rate
-kr_RIF = 0.17;          % gut reabsorption rate [1/h]
-
-CL_RIF = 7.86;          % systemic clearance [L/h]
-fR_RIF = 0.1830;        % fractional renal clearance
-
-br_frac_RIF = 9/49;     % proportion of RIF absorbed by bronchi from Himstedt et al.
-effRB_RIF = 2.56;       % bronchi efflux ratio from Himstedt et al.
-effRA_RIF = 3.67;       % alveolar efflux ratio from Himstedt et al.
+effRB_RIF = 2.56; % bronchi efflux ratio from Himstedt et al.
+effRA_RIF = 3.67; % alveolar efflux ratio from Himstedt et al.
 
 % model compts      name                index in concentration array
 compt_list_RIF =   ["Plasma";           % 1
@@ -89,7 +81,6 @@ ncompts_total_RIF = length(compt_list_RIF);
 toxic_compts_RIF = ["Liver", "Kidney"];
 
 % initialize cell arrays to store params and output
-param_store_RIF = cell(1, n_pts_RIF);
 Cs_oral_store_RIF = cell(1, n_pts_RIF);
 Cs_lung_store_RIF = cell(1, n_pts_RIF);
 
@@ -98,44 +89,46 @@ Cs_lung_store_RIF = cell(1, n_pts_RIF);
 
 % sample physiological parameters
 [bw_PD, vol_PDs_RIF, vol_frac_PDs_RIF, ...
-    qc_PD, flow_PDs_RIF, flow_frac_PDs_RIF] = getParamPDsRIF(0.2, 0.3); % CVs from Lyons et al.
+    qc_PD, flow_PDs_RIF, flow_frac_PDs_RIF, ...
+    params_store_RIF] = getParamPDsRIF(0.2, 0.3); % CVs from Lyons et al.
+
+% initialize parameter storage
+vol_params_store_RIF = params_store_RIF{1};
+flow_params_store_RIF = params_store_RIF{2};
 
 ts_RIF = 0:tstep_RIF:(24 * n_days_RIF - tstep_RIF);
 
 parfor pt_idx = 1:n_pts_RIF
     
-    [phys_RIF, pt_RIF]  = loadPhysParamsRIF("RIF", bw_PD, vol_PDs_RIF, vol_frac_PDs_RIF, ...
-                                            qc_PD, flow_PDs_RIF, flow_frac_PDs_RIF);
-
-    % package params                % index
-    params_RIF =   {oral_dose_RIF;  % 1
-                    lung_dose_RIF;  % 2
-                    ka_oral_RIF;    % 3
-                    CL_RIF;         % 4
-                    fR_RIF;         % 5
-                    kr_RIF;         % 6
-                    pt_RIF;         % 7
-                    phys_RIF;       % 8
-                    kF_RIF;         % 9
-                    kdiss_lung_RIF; % 10
-                    effRB_RIF;      % 11
-                    effRA_RIF;      % 12
-                    br_frac_RIF;    % 13
-                    tstep_RIF};     % 14
+    all_params_RIF = loadPhysParamsRIF(bw_PD, vol_PDs_RIF, vol_frac_PDs_RIF, ...
+                                         qc_PD, flow_PDs_RIF, flow_frac_PDs_RIF);
 
     % solve ODEs
     [C_oraldose_RIF_pt, ...
-        C_lungdose_RIF_pt] = solveODEs("RIF", params_RIF, ncompts_total_RIF, n_days_RIF, ...
+        C_lungdose_RIF_pt] = solveODEs("RIF", all_params_RIF, tstep_RIF, br_frac_RIF, ...
+                                        effRB_RIF, effRA_RIF, ...
+                                        ncompts_total_RIF, n_days_RIF, ...
+                                        oral_dose_RIF, lung_dose_RIF, ...
                                         oral_dose_freq_RIF, lung_dose_freq_RIF);
+
     % store results
-    param_store_RIF{pt_idx} = params_RIF;
     Cs_oral_store_RIF{pt_idx} = C_oraldose_RIF_pt;
     Cs_lung_store_RIF{pt_idx} = C_lungdose_RIF_pt;
+
+    % store parameters
+    vol_params_RIF = all_params_RIF{1};
+    flow_params_RIF = all_params_RIF{2};
+    vol_params_store_RIF = [vol_params_store_RIF; vol_params_RIF];
+    flow_params_store_RIF = [flow_params_store_RIF; flow_params_RIF];
 
     % track progress
     disp(append("pt. #", num2str(pt_idx), " calculated..."))
 
 end
+
+% repackage parameter storage
+params_store_RIF{1} = vol_params_store_RIF;
+params_store_RIF{2} = flow_params_store_RIF;
 
 
 %% Plot resulting timecourses

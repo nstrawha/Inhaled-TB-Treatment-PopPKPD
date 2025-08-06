@@ -1,4 +1,4 @@
-function [bw_PD, vol_PDs, vol_frac_PDs, qc_PD, flow_PDs, flow_frac_PDs, params_storage] = getParamPDsRIF(v_cv, q_cv)
+function [bw_PD, vol_PDs, vol_frac_PDs, qc_PD, flow_PDs, flow_frac_PDs] = getParamPDsRIF(v_cv, q_cv)
 % GETPARAMPDS - Returns the probability distributions of physiological
 % parameters given two CVs, one for volume parameters and one for flow
 % parameters.
@@ -24,8 +24,6 @@ function [bw_PD, vol_PDs, vol_frac_PDs, qc_PD, flow_PDs, flow_frac_PDs, params_s
 %   flow parameters not based on cardiac output
 % - flow_PDs_fracs (cell array): Contains all probability distributions for
 %   flow parameters that are calculated as fractions of cardiac output
-% - params_storage (cell array): Contains empty tables that have been
-%   initialized for future storage of varied volume and flow parameters
 
 
 %% Volumes
@@ -53,7 +51,7 @@ v_bone_mean_frac    = 0.1429 / 1.92;
 v_spleen_mean_frac  = 0.0026;
 v_gut_mean_frac     = 0.0171;
 v_liver_mean_frac   = 0.0257;
-v_other_mean_frac  = 0.04264;
+v_others_mean_frac  = 0.04264;
 v_pl_mean_frac      = 0.3 / 1000; % mL/kg to L
 
 v_means =  [v_v_mean, v_a_mean, v_ln_mean];
@@ -61,7 +59,7 @@ v_means =  [v_v_mean, v_a_mean, v_ln_mean];
 v_means_fracs = [v_lu_mean_frac, v_brain_mean_frac, v_heart_mean_frac, v_adipose_mean_frac, ...
                 v_muscle_mean_frac, v_skin_mean_frac, v_kidney_mean_frac, ...
                 v_bone_mean_frac, v_spleen_mean_frac, v_gut_mean_frac, v_liver_mean_frac, ...
-                v_other_mean_frac, v_pl_mean_frac];
+                v_others_mean_frac, v_pl_mean_frac];
 
 v_sds = v_means .* v_cv;
 v_sds_fracs = v_means_fracs .* v_cv;
@@ -101,7 +99,6 @@ qc_PD = truncate(qc_PD, (qc_mean - 3 * qc_sd), (qc_mean + 3 * qc_sd));
 % raw flows
 q_ka_mean    = 1.08;      % gut absorption rate [1/h]
 q_kdiss_mean = 50;        % elf dissolution rate [1/h]
-q_fR_mean    = 0.1830;    % fractional renal clearance
 q_kF_mean    = 0.252;     % gut transit rate
 q_kr_mean    = 0.17;      % gut reabsorption rate [1/h]
 q_CL_mean    = 7.86;      % systemic clearance [L/h]
@@ -123,7 +120,7 @@ q_oth_mean_frac = 0.04365;
 q_kd_mean_frac  = 0.19;
 
 % handle fracs and actual means separately for later processing
-q_means = [q_ka_mean, q_kdiss_mean, q_kF_mean, q_fR_mean, q_kr_mean, ...
+q_means = [q_ka_mean, q_kdiss_mean, q_kF_mean, q_kr_mean, ...
             q_CL_mean, q_pl_mean, q_bELF_mean, q_aELF_mean];
 
 q_means_fracs = [q_la_mean_frac, q_sp_mean_frac, q_gu_mean_frac, ...
@@ -158,29 +155,39 @@ for param_idx = 1:length(flow_frac_PDs)
 end
 
 % set up cell array of empty tables for later parameter storage
-vol_variables = ["BW", "venblood", "artblood", "lymph", ...
-    "lung", "brain", "heart", "adipose", ...
-    "muscle", "skin", "kidney", "bone", "spleen", ...
-    "gut", "liver", "other", "pleura", "fracsum"];
+vol_variables = ["body_weight", "venblood_vol", "artblood_vol", "lymph_vol", ...
+    "lung_vol", "lung_vol", "brain_vol", "heart_vol", "adipose_vol", ...
+    "muscle_vol", "skin_vol", "kidney_vol", "bone_vol", "spleen_vol", ...
+    "gut_vol", "liver_vol", "others_vol", "pleura_vol", "vol_fracsum"];
 
-flow_variables = ["QC", "ka", "kdiss", "fR", "kF", ...
-    "kr", "CL", "pleura", "bELF", "aELF", ...
-    "artblood", "spleen", "gut", "brain", "heart", ...
-    "adipose", "muscle", "bone", "skin", "other", ...
-    "kidney", "liver", "fracsum"];
+flow_variables = ["cardiac_output", "flow_ka", "flow_kdiss", "flow_kF", ...
+    "flow_kr", "flow_CL", "flow_pleura", "flow_bELF", "flow_aELF", ...
+    "flow_artblood", "flow_spleen", "flow_gut", "flow_brain", "flow_heart", ...
+    "flow_adipose", "flow_muscle", "flow_bone", "flow_skin", "flow_other", ...
+    "flow_kidney", "flow_liver", "flow_fracsum"];
 
 
 all_variables = {vol_variables, flow_variables};
-params_storage = cell(1, length(all_variables));
+all_params_storage = cell(1, length(all_variables));
 
-for idx = 1:length(params_storage)
+for idx = 1:length(all_params_storage)
     current_variables = all_variables{idx};
     current_table = cell2table(...
-        cell(0, length(current_variables)), ...
-        "VariableNames", current_variables ...
+        cell(0, length(current_variables), ...
+        "VariableNames", {current_variables}) ...
         );
-    params_storage{idx} = current_table;
+    all_params_storage{idx} = current_table;
 end
 
+
+
+
+
+all_params_storage = {
+    vol_table_storage, ...
+    flow_table_storage, ...
+    lflow_table_storage, ...
+    ptc_table_storage
+    };
 
 end

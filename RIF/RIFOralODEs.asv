@@ -19,8 +19,8 @@ function dC = RIFOralODEs(~, C, params)
 % 6: Adipose
 % 7: Heart
 % 8: Muscle
-% 9: skin
-% 10: other
+% 9: Skin
+% 10: Others
 % 11: Bone
 % 12: Spleen
 % 13: Kidney
@@ -47,8 +47,8 @@ dC = zeros(20, 1);
 
 % Venous Blood                                          
 dC(1) = (1/V.venblood) * (...
-        (F.brain - L.brain) * C(5)/K.brain + ...            % brain --> v. blood
-        (F.adipose - L.adipose) * C(6)/K.adipose + ...      % adipose tissue --> v. blood
+        (F.brain - L.brainain) * C(5)/K.brain + ...         % brain --> v. blood
+        (F.adipose - L.adiposeipose) * C(6)/K.adipose + ... % adipose tissue --> v. blood
         (F.heart - L.heart) * C(7)/K.heart + ...            % heart --> v. blood
         (F.muscle - L.muscle) * C(8)/K.muscle + ...         % muscle --> v. blood
         (F.skin - L.skin) * C(9)/K.skin + ...               % skin --> v. blood
@@ -76,8 +76,8 @@ dC(4) = (1/V.pleura) * (...
         F.pleura * C(3)/K.lung - ... % lung --> pleura
         F.pleura * C(4));            % pleura --> lung
 
-% Tissues with lymph flow (brain, Adipose, Heart, Muscle, skin, other)
-% Brain
+% Tissues with lymph flow (brain, Adipose, Heart, Muscle, Skin, Others)
+% brain
 dC(5) = (1/V.brain) * (...
         F.brain * C(2) - ...                       % a. blood --> brain
         (F.brain - L.brain) * C(5)/K.brain - ...   % brain --> v. blood
@@ -104,14 +104,14 @@ dC(8) = (1/V.muscle) * (...
 % Skin
 dC(9) = (1/V.skin) * (...
         F.skin * C(2) - ...                   % a. blood --> skin
-        (F.skin - L.skin) * C(9)/K.skin - ... % skin --> v. blood
-        L.skin * C(9)/K.skin);                % skin --> lymph
+        (F.skin - L.skin) * C(9)/K.Skin - ... % skin --> v. blood
+        L.skin * C(9)/K.Skin);                % skin --> lymph
 
 % Other tissue
-dC(10) = (1/V.other) * (...
-        F.other * C(2) - ...                       % a. blood --> other
-        (F.other - L.other) * C(10)/K.other - ...  % other --> v. blood
-        L.other * C(10)/K.other);                  % other --> lymph
+dC(10) = (1/V.others) * (...
+        F.others * C(2) - ...                         % a. blood --> others
+        (F.others - L.others) * C(10)/K.others - ...  % others --> v. blood
+        L.others * C(10)/K.others);                   % others --> lymph
 
 % Tissues with no lymph flow (Bone and Spleen)
 % Bone 
@@ -152,35 +152,35 @@ dC(15) = (1/V.liver) * (...
 
 % Lymph Node
 dC(16) = (1/V.lymph) * (...
-        L.brain * C(5)/K.brain + ...            % brain --> lymph
-        L.adipose * C(6)/K.adipose + ...        % adipose --> lymph
-        L.heart * C(7)/K.heart + ...            % heart --> lymph
-        L.muscle * C(8)/K.muscle + ...          % muscle --> lymph
-        L.skin * C(9)/K.skin + ...              % skin --> lymph
-        L.other * C(10)/K.other + ...           % other --> lymph
-        L.kidney * C(13)/K.kidney + ...         % kidney --> lymph
-        L.gut * C(14)/K.gut + ...               % gut --> lymph
-        L.liver * C(15)/K.liver + ...           % liver --> lymph
-        (L.lung - F.pleura) * C(3)/K.lung + ... % lungs --> lymph
-        F.pleura * C(4) - ...                   % pleura --> lymph
-        L.lymph * C(16)/K.lymph);               % lymph --> v. blood
+        L.brain * C(5)/K.brain + ...       % brain --> lymph
+        L.adipose * C(6)/K.adipose + ...     % adipose --> lymph
+        L.heart * C(7)/K.heart + ...       % heart --> lymph
+        L.muscle * C(8)/K.muscle + ...      % muscle --> lymph
+        L.skin * C(9)/K.skin + ...        % skin --> lymph
+        L.other * C(10)/K.others + ...    % others --> lymph
+        L.ki * C(13)/K.kidney + ...     % kidney --> lymph
+        L.Gu * C(14)/K.gut + ...        % gut --> lymph
+        L.Li * C(15)/K.liver + ...      % liver --> lymph
+        (L.Lu - F.Pl) * C(3)/K.lung + ...        % lungs --> lymph
+        F.pleura * C(4) - ...                       % pleura --> lymph
+        L.lymph * C(16)/K.lymph);                    % lymph --> v. blood
 
 % Gut Lumen
-dC(17) = (1 - F.fR) * F.CL * (...
-        (F.artblood * C(2) + ...                         % a. blood --> gut lumen
-        F.spleen * C(12)/K.spleen + ...                  % spleen --> gut lumen?
-        (F.gut - L.gut) * C(14)/K.gut) / F.liver) - ...  % gut lumen --> liver
-        F.kr * C(17) - ...                               % gut lumen --> gut (reabsorption)
-        F.kF * C(17);                                    % gut lumen clearance (feces)
+dC(17) = (1 - fR) * CL * (...
+        (F.LA * C(2) + ...                                  % a. blood --> gut lumen
+        F.Sp * C(12)/K.Spleen + ...                 % spleen --> gut lumen?
+        (F.Gu - L.Gu) * C(14)/K.Gut) / F.Li) - ...  % gut lumen --> liver
+        kr * C(17) - ...                                    % gut lumen --> gut (reabsorption)
+        kF * C(17);                                         % gut lumen clearance (feces)
 
 % Bronchi Epithelial Lining Fluid (bELF)
-dC(18) = 0; % unused for oral dose
+dC(18) = 0;
 
 % Alveolar Epithelial Lining Fluid (aELF)
 dC(19) = 0;
 
 % Drug Absorption
-dC(20) = -F.ka * C(20);   % absorption --> gut
+dC(20) = -ka * C(20);   % absorption --> gut
 
 
 end
