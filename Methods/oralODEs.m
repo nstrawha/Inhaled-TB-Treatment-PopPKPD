@@ -1,5 +1,5 @@
-function dC = RIFOralODEs(~, C, params)
-% RIF_ORAL_ODES - Sets up the lung dose ODEs for rifampin.
+function dC = oralODEs(~, C, params, effRB, effRA)
+% ORALODES - Sets up the lung dose ODEs for rifampin.
 %
 % INPUTS:
 % - C (double array): Contains the state vector of current
@@ -66,17 +66,22 @@ dC(2) = (1/V.artblood) * (...
 
 % Lung
 dC(3) = (1/V.lung) * (...
-        F.QC * C(1) - ...                        % v. blood --> lung
-        (F.QC - L.lung) * C(3)/K.lung - ...      % lung --> a. blood
-        (L.lung - F.pleura) * C(3)/K.lung - ...  % lung --> lymph
-        F.pleura * C(3)/K.lung);                 % lung --> pleura
+        F.QC * C(1) - ...                       % v. blood --> lung
+        (F.QC - L.lung) * C(3)/K.lung - ...     % lung --> a. blood
+        (L.lung - F.pleura) * C(3)/K.lung - ... % lung --> lymph
+        F.pleura * C(3)/K.lung);                % lung --> pleura
+
+%F.bELF * effRB * C(18) + ...            % bELF --> lung
+%        F.aELF * effRA * C(19) - ...            % aELF --> lung
+%        F.bELF * C(3) - ...                     % lung --> bELF
+%        F.aELF * C(3) + ...                     % lung --> aELF
 
 % Pleura
 dC(4) = (1/V.pleura) * (...
         F.pleura * C(3)/K.lung - ... % lung --> pleura
         F.pleura * C(4));            % pleura --> lung
 
-% Tissues with lymph flow (brain, Adipose, Heart, Muscle, skin, other)
+% Tissues with lymph flow (brain, adipose, heart, muscle, skin, other)
 % Brain
 dC(5) = (1/V.brain) * (...
         F.brain * C(2) - ...                       % a. blood --> brain
@@ -174,10 +179,12 @@ dC(17) = (1 - F.fR) * F.CL * (...
         F.kF * C(17);                                    % gut lumen clearance (feces)
 
 % Bronchi Epithelial Lining Fluid (bELF)
-dC(18) = 0; % unused for oral dose
+dC(18) = F.bELF * C(3) - ...               % lung --> bELF
+         F.bELF * effRB * C(18);           % bELF --> lung
 
 % Alveolar Epithelial Lining Fluid (aELF)
-dC(19) = 0;
+dC(19) = F.aELF * C(3) - ...                       % lung --> ELF
+         F.aELF * effRA * C(19);                   % aELF --> lung
 
 % Drug Absorption
 dC(20) = -F.ka * C(20);   % absorption --> gut

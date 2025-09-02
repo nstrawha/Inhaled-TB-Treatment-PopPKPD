@@ -1,4 +1,4 @@
-function all_params = loadPhysParamsRIF(bw_PD, vol_PDs, vol_frac_PDs, qc_PD, flow_PDs, flow_frac_PDs)
+function all_params = loadPhysParams(drug, bw_PD, vol_PDs, vol_frac_PDs, qc_PD, flow_PDs, flow_frac_PDs)
 % LOADPHYSPARAMS: Calculates random physiological parameter values based on
 % given probability distributions
 %
@@ -142,20 +142,72 @@ lflow_table = table(lymph, lung, brain, heart, ...
                     other, kidney, liver, spleen, ...
                     gut);
 
-%% Partition coefficients
-lung    = 1.7115;
-lymph   = 1.2081;
-brain   = 0.2285;
-adipose = 0.1885;
-heart   = 1.0158;
-muscle  = 0.6949;
-skin    = 0.6265;
-other  = 1.047;
-bone    = 0.3157;
-spleen  = 1.3950;
-kidney  = 2.1725;
-gut     = 1.0781;
-liver   = 1.9646;
+%% Partition coefficients (drug-specific)
+
+if drug == "RIF"
+    lung    = 1.7115;
+    lymph   = 1.2081;
+    brain   = 0.2285;
+    adipose = 0.1885;
+    heart   = 1.0158;
+    muscle  = 0.6949;
+    skin    = 0.6265;
+    other   = 1.047;
+    bone    = 0.3157;
+    spleen  = 1.3950;
+    kidney  = 2.1725;
+    gut     = 1.0781;
+    liver   = 1.9646;
+
+elseif drug == "INH"
+    lung    = 0.7662;
+    lymph   = 0.7556;
+    brain   = 0.7537;
+    adipose = 0.1543;
+    heart   = 0.7551;
+    muscle  = 0.7208;
+    skin    = 0.6675;
+    other   = 0.7435;
+    bone    = 0.4330;
+    spleen  = 0.7605;
+    kidney  = 0.7441;
+    gut     = 0.7429;
+    liver   = 0.7212;
+
+elseif drug == "PZA"
+    lung    = 0.7381;
+    lymph   = 0.7210;
+    brain   = 0.7184;
+    adipose = 0.1503;
+    heart   = 0.7243;
+    muscle  = 0.6868;
+    skin    = 0.6496;
+    other   = 0.7133;
+    bone    = 0.4163;
+    spleen  = 0.726;
+    kidney  = 0.7127;
+    gut     = 0.714;
+    liver   = 0.6887;
+
+elseif drug == "EMB"
+    lung    = 4.3966;
+    lymph   = 3.6743;
+    brain   = 1.8054;
+    adipose = 0.4625;
+    heart   = 3.0623;
+    muscle  = 2.7093;
+    skin    = 1.9938;
+    other   = 3.1337;
+    bone    = 1.3765;
+    spleen  = 4.0004;
+    kidney  = 5.3375;
+    gut     = 3.2051;
+    liver   = 5.0703;
+
+else
+    error("Partition coeffs. not defined for the requested drug")
+
+end
 
 ptc_table = table(lung, lymph, brain, adipose, heart, ...
                     muscle, skin, other, bone, spleen, ...

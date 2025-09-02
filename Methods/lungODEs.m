@@ -1,4 +1,4 @@
-function dC = RIFLungODEs(~, C, params, br_frac, effRB, effRA)
+function dC = lungODEs(~, C, params, br_frac, effRB, effRA)
 % RIF_LUNG_ODES - Sets up the lung dose ODEs for rifampin.
 %
 % INPUTS:

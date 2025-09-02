@@ -1,4 +1,4 @@
-function [bw_PD, vol_PDs, vol_frac_PDs, qc_PD, flow_PDs, flow_frac_PDs, params_storage] = getParamPDsRIF(v_cv, q_cv)
+function [bw_PD, vol_PDs, vol_frac_PDs, qc_PD, flow_PDs, flow_frac_PDs, params_storage] = getParamPDs(drug, v_cv, q_cv)
 % GETPARAMPDS - Returns the probability distributions of physiological
 % parameters given two CVs, one for volume parameters and one for flow
 % parameters.
@@ -32,7 +32,7 @@ function [bw_PD, vol_PDs, vol_frac_PDs, qc_PD, flow_PDs, flow_frac_PDs, params_s
 
 % body weight PD
 bw_mean = 70;
-bw_sd = 1.10; % from Dugas et al.
+bw_sd = 0.000000001; % 1.10; % from Dugas et al.
 bw_PD = makedist("Normal", "mu", bw_mean, "sigma", bw_sd);
 bw_PD = truncate(bw_PD, (bw_mean - 3 * bw_sd), (bw_mean + 3 * bw_sd));
 
@@ -53,7 +53,7 @@ v_bone_mean_frac    = 0.1429 / 1.92;
 v_spleen_mean_frac  = 0.0026;
 v_gut_mean_frac     = 0.0171;
 v_liver_mean_frac   = 0.0257;
-v_other_mean_frac  = 0.04264;
+v_other_mean_frac   = 0.04264;
 v_pl_mean_frac      = 0.3 / 1000; % mL/kg to L
 
 v_means =  [v_v_mean, v_a_mean, v_ln_mean];
@@ -94,17 +94,46 @@ end
 
 % cardiac output PD
 qc_mean = 5200 / 1000 * 60;
-qc_sd = 1200 / 1000 * 60; % from Natori et al.
+qc_sd = 0.000001; % 1200 / 1000 * 60; % from Natori et al.
 qc_PD = makedist("Normal", "mu", qc_mean, "sigma", qc_sd);
 qc_PD = truncate(qc_PD, (qc_mean - 3 * qc_sd), (qc_mean + 3 * qc_sd));
 
 % raw flows
-q_ka_mean    = 1.08;      % gut absorption rate [1/h]
-q_kdiss_mean = 50;        % elf dissolution rate [1/h]
-q_fR_mean    = 0.1830;    % fractional renal clearance
+if drug == "RIF"
+    q_ka_mean    = 1.08;      % gut absorption rate [1/h]
+    q_kdiss_mean = 50;        % elf dissolution rate [1/h]
+    q_fR_mean    = 0.1830;    % fractional renal clearance
+    q_CL_mean    = 7.86;      % systemic clearance [L/h]
+    q_kr_mean    = 0.17;      % gut reabsorption rate [1/h]
+
+elseif drug == "INH"
+    q_ka_mean    = 1.08;      % gut absorption rate [1/h]
+    q_kdiss_mean = 50;        % elf dissolution rate [1/h]
+    q_fR_mean    = 0.1830;    % fractional renal clearance
+    q_CL_mean    = 7.86;      % systemic clearance [L/h]
+    q_kr_mean    = 0.17;      % gut reabsorption rate [1/h]
+
+elseif drug == "PZA"
+    q_ka_mean    = 1.08;      % gut absorption rate [1/h]
+    q_kdiss_mean = 50;        % elf dissolution rate [1/h]
+    q_fR_mean    = 0.1830;    % fractional renal clearance
+    q_CL_mean    = 7.86;      % systemic clearance [L/h]
+    q_kr_mean    = 0.17;      % gut reabsorption rate [1/h]
+
+elseif drug == "EMB"
+    q_ka_mean    = 0.22;      % gut absorption rate [1/h]
+    q_kdiss_mean = 50;        % elf dissolution rate [1/h]
+    q_fR_mean    = 0.79;      % fractional renal clearance
+    q_CL_mean    = 49.93;     % systemic clearance [L/h]
+    q_kr_mean    = 0;         % gut reabsorption rate [1/h]
+
+else
+    error("Parameters not defined for the requested drug")
+
+end
+
+
 q_kF_mean    = 0.252;     % gut transit rate
-q_kr_mean    = 0.17;      % gut reabsorption rate [1/h]
-q_CL_mean    = 7.86;      % systemic clearance [L/h]
 q_pl_mean    = 0.15/1000; % Pleural fluid flow [L/h]
 q_bELF_mean  = (5.25 * 100) * (5.75 * 10^-5) * (1/1000) * 3600; % from Himstedt et al.
 q_aELF_mean  = (171 * 100) * (5.75 * 10^-5) * (1/1000) * 3600;  % from Himstedt et al.
@@ -132,6 +161,7 @@ q_means_fracs = [q_la_mean_frac, q_sp_mean_frac, q_gu_mean_frac, ...
                 q_oth_mean_frac, q_kd_mean_frac];
 
 q_sds = q_means .* q_cv;
+q_sds(q_sds == 0) = 0.0000000000001;
 q_sds_fracs = q_means_fracs .* q_cv;
 
 % create cell arrays of truncated probability dists for each flow param

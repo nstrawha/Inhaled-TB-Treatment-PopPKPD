@@ -298,7 +298,7 @@ for compt_idx = 1:length(PTA_AUC_storage)
     title("CFR for C_{max}/MIC Target", "FontSize", 15);
 
     ylabel(tlayout, "% CFR");
-    sgtitle(append(current_compt, " CFRs"), "FontSize", 20);
+    sgtitle(append(current_compt, " Compartment CFRs"), "FontSize", 20);
 
     saveas(fig, append("Outputs/", drug, "/Figures/", current_compt, "_CFRs_comparison.png"));
 

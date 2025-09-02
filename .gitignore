@@ -1,4 +1,6 @@
 # Model output files
 Outputs/
+
+# Unwanted file types
 .asv
 .prj

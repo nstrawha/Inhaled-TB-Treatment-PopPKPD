@@ -212,7 +212,7 @@ for compt_idx = 1:length(relevant_compts)
 
     lower_AUC = min([AUCs_oral_mean, AUCs_lung_mean]);
     higher_AUC = max([AUCs_oral_mean, AUCs_lung_mean]);
-    ylims = [floor(lower_AUC / 5) * 5 - 1, ceil(higher_AUC / 5) * 5 + 1];
+    ylims = [floor(lower_AUC / 5) * 5 - 3, ceil(higher_AUC / 5) * 5 + 3];
     ylim(ylims);
     xticks(1:2)
     xticklabels(["Oral Dose", "Lung Dose"]);
