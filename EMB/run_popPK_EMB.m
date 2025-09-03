@@ -45,12 +45,12 @@ addpath("Methods/");
 
 % fixed model parameters
 n_pts_EMB = 1;
-n_days_EMB = 7; % > TODO is steady state
+n_days_EMB = 1; % > TODO is steady state
 days_to_plot_EMB = 1;
-relevant_compts_EMB = {"Plasma"};
+relevant_compts_EMB = {"Lung"};
 
-oral_dose_EMB = 1200;    % mg
-lung_dose_EMB = 1200;    % mg
+oral_dose_EMB = 1500;    % mg
+lung_dose_EMB = 1500;    % mg
 oral_dose_freq_EMB = 1;  % doses/day
 lung_dose_freq_EMB = 1;  % doses/day
 
@@ -95,7 +95,7 @@ Cs_lung_store_EMB = cell(1, n_pts_EMB);
 % sample physiological parameters
 [bw_PD, vol_PDs_EMB, vol_frac_PDs_EMB, ...
     qc_PD, flow_PDs_EMB, flow_frac_PDs_EMB, ...
-    params_store_EMB] = getParamPDs("EMB", 0.00000001, 0.000000001); % CVs from Lyons et al.
+    params_store_EMB] = getParamPDs("EMB", 0.00000000000001, 0.0000000000001); % CVs from Lyons et al.
 
 % initialize parameter storage
 vol_params_store_EMB = params_store_EMB{1};
@@ -170,16 +170,19 @@ end
 %% Calculate PTAs for oral and lung dosing
 
 % MIC dist formatted as [conc., # isolates]
-MICs_TB_EMB =  {[0.250, 1];
-                [0.500, 42];
-                [1.000, 180];
-                [2.000, 43];
-                [4.000, 3];
+MICs_TB_EMB =  {[0.031, 28];
+                [0.062, 47];
+                [0.120, 51];
+                [0.250, 76];
+                [0.500, 81];
+                [1.000, 68];
+                [2.000, 0];
+                [4.000, 5];
                 [8.000, 0];
                 [16.00, 0]};
 
-EMB_AUC_target = 119; % AUC/MIC, from Gumbo
-EMB_Cmax_target = 0; % Dummy - not used for EMB
+EMB_AUC_target = 271; % AUC/MIC, from Jayaram et al.
+EMB_Cmax_target = 175; % Cmax/MIC, from Gumbo et al.
 
 % record nontoxic compartments to calculate PTA for
 nontoxic_compts_EMB = [];

@@ -42,7 +42,7 @@ end
 
 % renormalize fractions
 vfracs_sum = sum(rand_params_fracs);
-rand_params_fracs = rand_params_fracs / vfracs_sum;
+rand_params_fracs = (rand_params_fracs / vfracs_sum) * 0.870409878; % correction for handling some values raw
 rand_params = [rand_params, rand_params_fracs .* BW];
 
 % unpack and place into table
@@ -61,7 +61,7 @@ bone        = rand_params(11);
 spleen      = rand_params(12);
 gut         = rand_params(13);
 liver       = rand_params(14);
-other      = rand_params(15);
+other       = rand_params(15);
 pleura      = rand_params(16);
 fracsum     = vfracs_sum; % record sum of fractions for downstream analysis
 

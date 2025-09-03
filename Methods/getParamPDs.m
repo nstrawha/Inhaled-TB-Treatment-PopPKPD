@@ -114,11 +114,11 @@ elseif drug == "INH"
     q_kr_mean    = 0.17;      % gut reabsorption rate [1/h]
 
 elseif drug == "PZA"
-    q_ka_mean    = 1.08;      % gut absorption rate [1/h]
+    q_ka_mean    = 1.39;      % gut absorption rate [1/h]
     q_kdiss_mean = 50;        % elf dissolution rate [1/h]
-    q_fR_mean    = 0.1830;    % fractional renal clearance
-    q_CL_mean    = 7.86;      % systemic clearance [L/h]
-    q_kr_mean    = 0.17;      % gut reabsorption rate [1/h]
+    q_fR_mean    = 0.09;      % fractional renal clearance
+    q_CL_mean    = 4.14;      % systemic clearance [L/h]
+    q_kr_mean    = 0;         % gut reabsorption rate [1/h]
 
 elseif drug == "EMB"
     q_ka_mean    = 0.22;      % gut absorption rate [1/h]
