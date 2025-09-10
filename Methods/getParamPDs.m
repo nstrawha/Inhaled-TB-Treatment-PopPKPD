@@ -106,12 +106,19 @@ if drug == "RIF"
     q_CL_mean    = 7.86;      % systemic clearance [L/h]
     q_kr_mean    = 0.17;      % gut reabsorption rate [1/h]
 
-elseif drug == "INH"
-    q_ka_mean    = 1.08;      % gut absorption rate [1/h]
+elseif drug == "INHSA"
+    q_ka_mean    = 4.11;      % gut absorption rate [1/h]
     q_kdiss_mean = 50;        % elf dissolution rate [1/h]
-    q_fR_mean    = 0.1830;    % fractional renal clearance
-    q_CL_mean    = 7.86;      % systemic clearance [L/h]
-    q_kr_mean    = 0.17;      % gut reabsorption rate [1/h]
+    q_fR_mean    = 0.29;      % fractional renal clearance
+    q_CL_mean    = 9.17;      % systemic clearance [L/h]
+    q_kr_mean    = 0;         % gut reabsorption rate [1/h]
+
+elseif drug == "INHFA"
+    q_ka_mean    = 2.89;      % gut absorption rate [1/h]
+    q_kdiss_mean = 50;        % elf dissolution rate [1/h]
+    q_fR_mean    = 0.07;      % fractional renal clearance
+    q_CL_mean    = 24.34;     % systemic clearance [L/h]
+    q_kr_mean    = 0;         % gut reabsorption rate [1/h]
 
 elseif drug == "PZA"
     q_ka_mean    = 1.39;      % gut absorption rate [1/h]

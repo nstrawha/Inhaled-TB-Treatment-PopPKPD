@@ -159,7 +159,7 @@ if drug == "RIF"
     gut     = 1.0781;
     liver   = 1.9646;
 
-elseif drug == "INH"
+elseif drug == "INHSA" || drug == "INHFA" % partition coeffs. are the same for either
     lung    = 0.7662;
     lymph   = 0.7556;
     brain   = 0.7537;

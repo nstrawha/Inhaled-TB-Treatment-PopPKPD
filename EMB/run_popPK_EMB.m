@@ -49,8 +49,8 @@ n_days_EMB = 1; % > TODO is steady state
 days_to_plot_EMB = 1;
 relevant_compts_EMB = {"Lung"};
 
-oral_dose_EMB = 1500;    % mg
-lung_dose_EMB = 1500;    % mg
+oral_dose_EMB = 1200;    % mg
+lung_dose_EMB = 1200;    % mg
 oral_dose_freq_EMB = 1;  % doses/day
 lung_dose_freq_EMB = 1;  % doses/day
 

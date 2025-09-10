@@ -47,10 +47,10 @@ addpath("Methods/");
 n_pts_PZA = 1;
 n_days_PZA = 1; % > TODO is steady state
 days_to_plot_PZA = 1;
-relevant_compts_PZA = {"Lung"};
+relevant_compts_PZA = {"Plasma"};
 
-oral_dose_PZA = 1500;    % mg
-lung_dose_PZA = 1500;    % mg
+oral_dose_PZA = 2000;    % mg
+lung_dose_PZA = 2000;    % mg
 oral_dose_freq_PZA = 1;  % doses/day
 lung_dose_freq_PZA = 1;  % doses/day
 
@@ -181,7 +181,7 @@ MICs_TB_PZA =  {[0.031, 28];
                 [8.000, 0];
                 [16.00, 0]};
 
-PZA_AUC_target = 271; % AUC/MIC, from Jayaram et al.
+PZA_AUC_target = 120; % AUC/MIC, from Gumbo et al.
 PZA_Cmax_target = 175; % Cmax/MIC, from Gumbo et al.
 
 % record nontoxic compartments to calculate PTA for

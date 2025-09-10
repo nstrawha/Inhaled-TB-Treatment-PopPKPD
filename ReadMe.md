@@ -1,4 +1,4 @@
-### Inhaled Tuberculosis Treatment Population Pharmacokinetic/Pharmacodynamic Model
+# Inhaled Tuberculosis Treatment Population Pharmacokinetic/Pharmacodynamic Model
 
 The model presented here predicts the performance of inhaled rifampin (RIF) against the standard oral dose for the treatment of tuberculosis (TB). Toxicity in the liver and kidneys is also taken into consideration. Scripts and functions for the other first-line TB medications (isoniazid, pyrazinamide, and ethambutol) are currently in development. Drug-specific scripts and functions are contained within their respective folders, and general methods functions are in Methods/.
 

@@ -54,29 +54,6 @@ CFR_Cmax_storage = cell(1, length(nontoxic_compts));
 dummy_data = repelem(concs, isolates);
 MIC_PD = fitdist(dummy_data, "Lognormal");
 
-%% Plot MICs and the estimated full dist
-
-fig = figure();
-
-scatter(concs, isolates, 75, ...
-    "DisplayName", "MIC Distribution (Normalized)", ...
-    "MarkerFaceColor", "Black", ...
-    "MarkerEdgeColor", "Black");
-
-yline(0, "LineWidth", 2, "HandleVisibility", "off");
-xlim([0.008, max(MICs_to_test)]);
-% ylim([-0.05, 1.05]);
-
-set(gca, "XScale", "log");
-xlabel("Minimum Inhibitory Concentration (MIC)");
-ylabel("Number of Isolates Inhibited");
-
-title(append(drug, "/TB MIC Distribution"), "FontSize", 20);
-
-saveas(fig, append("Outputs/", drug, "/Figures/MIC_dist.png"));
-
-hold off;
-
 
 %% Calculate PTA dists
 
