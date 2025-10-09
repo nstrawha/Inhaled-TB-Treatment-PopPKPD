@@ -141,7 +141,7 @@ end
 
 
 q_kF_mean    = 0.252;     % gut transit rate
-q_pl_mean    = 0.15/1000; % Pleural fluid flow [L/h]
+q_pl_mean    = 0.15 * 70 /1000; % Pleural fluid flow [L/h]
 q_bELF_mean  = (5.25 * 100) * (5.75 * 10^-5) * (1/1000) * 3600; % from Himstedt et al.
 q_aELF_mean  = (171 * 100) * (5.75 * 10^-5) * (1/1000) * 3600;  % from Himstedt et al.
 

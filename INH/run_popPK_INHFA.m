@@ -45,9 +45,9 @@ addpath("Methods/");
 
 % fixed model parameters
 n_pts_INHFA = 1;
-n_days_INHFA = 1; % > TODO is steady state
+n_days_INHFA = 8; % > TODO is steady state
 days_to_plot_INHFA = 1;
-relevant_compts_INHFA = {"Plasma"};
+relevant_compts_INHFA = {"Plasma", "Pleura", "Lung"};
 
 oral_dose_INHFA = 300;    % mg
 lung_dose_INHFA = 300;    % mg

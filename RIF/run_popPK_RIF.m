@@ -45,9 +45,9 @@ addpath("Methods/");
 
 % fixed model parameters
 n_pts_RIF = 1;
-n_days_RIF = 4; % > 3 is steady state
+n_days_RIF = 8; % > 3 is steady state
 days_to_plot_RIF = 1;
-relevant_compts_RIF = {"Plasma"};
+relevant_compts_RIF = {"Pleura"};
 
 oral_dose_RIF = 600;    % mg
 lung_dose_RIF = 600;    % mg

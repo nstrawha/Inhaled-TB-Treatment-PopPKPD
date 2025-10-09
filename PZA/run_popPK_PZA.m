@@ -45,9 +45,9 @@ addpath("Methods/");
 
 % fixed model parameters
 n_pts_PZA = 1;
-n_days_PZA = 1; % > TODO is steady state
+n_days_PZA = 8; % > TODO is steady state
 days_to_plot_PZA = 1;
-relevant_compts_PZA = {"Plasma"};
+relevant_compts_PZA = {"Pleura"};
 
 oral_dose_PZA = 2000;    % mg
 lung_dose_PZA = 2000;    % mg
