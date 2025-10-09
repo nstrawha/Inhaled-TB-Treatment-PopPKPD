@@ -17,7 +17,7 @@ Contact nstrawha@purdue.edu with questions.
 
 ## Drug Scripts
 
-### regimen_analysis_[DRUG].m
+### regimen_analysis_[DRUG].m (WIP for all drugs)
 
 Uses a combinatorial analysis approach to generate contour plots and data tables of percent differences between AUC and C<sub>max</sub> for several possible inhaled dose regimens and the standard oral dose. Used to select for an optimal dose for simulation in the run_popPK_[DRUG].m script.
 
@@ -40,21 +40,19 @@ Important inputs:
 - oral/lung_dose_[DRUG]: Oral/inhaled dose amount (mg/dose) to simulate.
 - oral/lung_dose_freq_[DRUG]: Oral/inhaled dose frequency (doses/day) to simulate.
 
-## Drug Functions
+## Methods Functions
 
-### getParamPDs[DRUG].m
+### [`getParamPDs.m`](methods/getParamPDs.m)
 
 Sets up and returns probability distributions for most model parameters for later sampling. Assumes all blood flow parameters and compartment volume parameters have identical CVs, respectively, which are taken as input. Also sets up and returns empty tables for patient parameter storage.
 
-### loadPhysParams[DRUG].m
+### [`loadPhysParams.m`](methods/loadPhysParams.m)
 
-Uses the probability distributions returned by getParamPDs[DRUG] to sample and return a set of random parameters, representing an individual patient, that are later used to solve the model's systems of ODEs.
+Uses the probability distributions returned by [`getParamPDs.m`](methods/getParamPDs.m) to sample and return a set of random parameters, representing an individual patient, that are later used to solve the model's systems of ODEs.
 
 ### [DRUG]Oral/LungODEs.m
 
 Used when calling ode15s to set up the system of ODEs for an oral/lung dose. 
-
-## Methods Functions
 
 ### [`solveODEs.m`](methods/solveODEs.m)
 
