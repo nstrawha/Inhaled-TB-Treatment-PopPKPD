@@ -1,4 +1,4 @@
-function [Cs_oral, Cs_lung] = solveODEs(params, tstep, br_frac, effRB, effRA, ncompts_total, n_days, oral_dose, lung_dose, oral_dose_freq, lung_dose_freq)
+function [Cs_oral, Cs_lung] = solveODEs(params, tstep, br_frac, ncompts_total, n_days, oral_dose, lung_dose, oral_dose_freq, lung_dose_freq)
 
 % SOLVEODES - Sets up and solves the corresponding system of ODEs for a 
 % certain drug.
@@ -48,7 +48,7 @@ Cs_lung = zeros((length(timepts_lung) - 1) * lung_dose_freq * n_days, ncompts_to
 % oral eqs
 for dose_idx = 1:(n_days * oral_dose_freq)
     
-    [~, Cs_oral_temp] = ode23s(@(t, C) oralODEs(t, C, params, effRB, effRA), timepts_oral, C0_oraldose, options);
+    [~, Cs_oral_temp] = ode23s(@(t, C) oralODEs(t, C, params), timepts_oral, C0_oraldose, options);
     C0_oraldose = [Cs_oral_temp(end, 1:(ncompts_total - 1))'; 
                                 Cs_oral_temp(end, ncompts_total) + oral_dose];
     Cs_oral_temp(end, :) = []; % remove initial condition
@@ -62,7 +62,7 @@ end
 % lung eqs
 for dose_idx = 1:(n_days * lung_dose_freq)
     
-    [~, Cs_lung_temp] = ode23s(@(t, C) lungODEs(t, C, params, br_frac, effRB, effRA), timepts_lung, C0_lungdose, options);
+    [~, Cs_lung_temp] = ode23s(@(t, C) lungODEs(t, C, params, br_frac), timepts_lung, C0_lungdose, options);
     C0_lungdose = [Cs_lung_temp(end, 1:(ncompts_total - 1))'; 
                                 Cs_lung_temp(end, ncompts_total) + lung_dose];
     Cs_lung_temp(end, :) = []; % remove initial condition

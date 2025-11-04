@@ -1,4 +1,4 @@
-function plotPTAs(drug, tval_type, nontoxic_compts, AUCs_oral, AUCs_lung, Cmaxs_oral, Cmaxs_lung, MIC_dist, target, oral_dose, oral_dose_freq, lung_dose, lung_dose_freq, n_pts, n_days)
+function plotPTAs(drug, tval_type, compts_to_calc, AUCs_oral, AUCs_lung, Cmaxs_oral, Cmaxs_lung, MIC_dist, target, oral_dose, oral_dose_freq, lung_dose, lung_dose_freq, n_pts, n_days)
 % PLOTPTAS - Calculates and plots the probability of target attainment (for
 % AUC/MIC and Cmax/MIC targets) for an oral vs. lung dose of medication.
 %
@@ -47,8 +47,8 @@ isolates = cell2mat(cellfun(@(x) x(:, 2), MIC_dist, "UniformOutput", false));
 MICs_to_test = 0.001:0.001:25; % start at 0.001 ug/mL
 
 % set up storage
-PTA_storage = cell(1, length(nontoxic_compts));
-CFR_storage = cell(1, length(nontoxic_compts));
+PTA_storage = cell(1, length(compts_to_calc));
+CFR_storage = cell(1, length(compts_to_calc));
 
 % find the continuous lognormal probabiliity dist for MICs
 dummy_data = repelem(concs, isolates);
@@ -59,7 +59,7 @@ MIC_PD = fitdist(dummy_data, "Lognormal");
 
 % AUC/MIC tval type
 if tval_type == "AUC/MIC"
-    parfor compt_idx = 1:length(nontoxic_compts)
+    parfor compt_idx = 1:length(compts_to_calc)
     
         current_AUCs_oral = AUCs_oral{compt_idx};
         current_AUCs_lung = AUCs_lung{compt_idx};
@@ -100,7 +100,7 @@ if tval_type == "AUC/MIC"
 
 % Cmax/MIC tval type
 elseif tval_type == "Cmax/MIC"
-        parfor compt_idx = 1:length(nontoxic_compts)
+        parfor compt_idx = 1:length(compts_to_calc)
     
         current_Cmaxs_oral = Cmaxs_oral{compt_idx};
         current_Cmaxs_lung = Cmaxs_lung{compt_idx};
@@ -171,7 +171,7 @@ for compt_idx = 1:length(PTA_storage)
     ylim([-0.05, 1.05]);
     xlabel("Minimum Inhibitory Concentration (\mug/mL)");
     ylabel("Probability of Target Attainment (PTA)");
-    title(append(nontoxic_compts{compt_idx}, " PTA ", tval_type), "FontSize", 20);
+    title(append(compts_to_calc{compt_idx}, " PTA ", tval_type), "FontSize", 20);
 
     set(gca, "XScale", "log");
     leg = legend("show");
@@ -188,7 +188,7 @@ for compt_idx = 1:length(PTA_storage)
     CFR_storage{compt_idx} = [CFR_oral, CFR_lung];
 
     % save figure
-    saveas(fig, append("Outputs/", drug, "/Figures/", nontoxic_compts{compt_idx}, "_", erase(tval_type, "/"), ".png"));
+    saveas(fig, append("Outputs/", drug, "/Figures/", compts_to_calc{compt_idx}, "_", erase(tval_type, "/"), ".png"));
 
 end
 
@@ -196,7 +196,7 @@ end
 %% CFR barplots
 
 for compt_idx = 1:length(PTA_storage)
-    current_compt = nontoxic_compts{compt_idx};
+    current_compt = compts_to_calc{compt_idx};
     
     fig = figure();
 

@@ -101,22 +101,24 @@ CL         = rand_params(6);
 pleura     = rand_params(7);
 bELF       = rand_params(8);
 aELF       = rand_params(9);
-artblood   = rand_params(10);
-spleen     = rand_params(11);
-gut        = rand_params(12);
-brain      = rand_params(13);
-heart      = rand_params(14);
-adipose    = rand_params(15);
-muscle     = rand_params(16);
-bone       = rand_params(17);
-skin       = rand_params(18);
-other      = rand_params(19);
-kidney     = rand_params(20);
+effRB      = rand_params(10);
+effRA      = rand_params(11);
+artblood   = rand_params(12);
+spleen     = rand_params(13);
+gut        = rand_params(14);
+brain      = rand_params(15);
+heart      = rand_params(16);
+adipose    = rand_params(17);
+muscle     = rand_params(18);
+bone       = rand_params(19);
+skin       = rand_params(20);
+other      = rand_params(21);
+kidney     = rand_params(22);
 liver      = spleen + gut + artblood;
 fracsum    = qfracs_sum; % record sum of fractions for downstream analysis
 
 flow_table = table(QC, ka, kdiss, fR, kF, kr, ...
-                    CL, pleura, bELF, aELF, ...
+                    CL, pleura, bELF, aELF, effRB, effRA, ...
                     artblood, spleen, gut, brain, ...
                     heart, adipose, muscle, bone, skin, ...
                     other, kidney, liver, fracsum);

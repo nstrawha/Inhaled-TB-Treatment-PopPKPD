@@ -1,4 +1,4 @@
-function dC = lungODEs(~, C, params, br_frac, effRB, effRA)
+function dC = lungODEs(~, C, params, br_frac)
 % RIF_LUNG_ODES - Sets up the lung dose ODEs for rifampin.
 %
 % INPUTS:
@@ -65,8 +65,8 @@ dC(2) = (1/V.artblood) * (...
 
 % Lung
 dC(3) = (1/V.lung) * (...
-        F.bELF * effRB * C(18) + ...            % bELF --> lung
-        F.aELF * effRA * C(19) - ...            % aELF --> lung
+        F.bELF * F.effRB * C(18) + ...            % bELF --> lung
+        F.aELF * F.effRA * C(19) - ...            % aELF --> lung
         F.bELF * C(3) - ...                     % lung --> bELF
         F.aELF * C(3) + ...                     % lung --> aELF
         F.QC * C(1) - ...                       % v. blood --> lung
@@ -178,12 +178,12 @@ dC(17) = (1 - F.fR) * F.CL * (...
 % Bronchi Epithelial Lining Fluid (bELF)
 dC(18) = F.kdiss * C(20) * br_frac + ...  % dissolution --> bELF
         F.bELF * C(3) - ...               % lung --> bELF
-        F.bELF * effRB * C(18);           % bELF --> lung
+        F.bELF * F.effRB * C(18);           % bELF --> lung
 
 % Alveolar Epithelial Lining Fluid (aELF)
 dC(19) = F.kdiss * C(20) * (1 - br_frac) + ...    % dissolution --> aELF
         F.aELF * C(3) - ...                       % lung --> ELF
-        F.aELF * effRA * C(19);                   % aELF --> lung
+        F.aELF * F.effRA * C(19);                   % aELF --> lung
 
 % Drug Dissolution
 dC(20) = -F.kdiss * C(20);   % dissolution --> ELF

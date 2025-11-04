@@ -105,6 +105,8 @@ if drug == "RIF"
     q_fR_mean    = 0.1830;    % fractional renal clearance
     q_CL_mean    = 7.86;      % systemic clearance [L/h]
     q_kr_mean    = 0.17;      % gut reabsorption rate [1/h]
+    q_effRB_mean = 2.56;    % bronchi efflux ratio from Himstedt et al.
+    q_effRA_mean = 3.67;    % alveolar efflux ratio from Himstedt et al.
 
 elseif drug == "INHSA"
     q_ka_mean    = 4.11;      % gut absorption rate [1/h]
@@ -112,6 +114,8 @@ elseif drug == "INHSA"
     q_fR_mean    = 0.29;      % fractional renal clearance
     q_CL_mean    = 9.17;      % systemic clearance [L/h]
     q_kr_mean    = 0;         % gut reabsorption rate [1/h]
+    q_effRB_mean = 2.56;    % bronchi efflux ratio from Himstedt et al.
+    q_effRA_mean = 3.67;    % alveolar efflux ratio from Himstedt et al.
 
 elseif drug == "INHFA"
     q_ka_mean    = 2.89;      % gut absorption rate [1/h]
@@ -119,6 +123,8 @@ elseif drug == "INHFA"
     q_fR_mean    = 0.07;      % fractional renal clearance
     q_CL_mean    = 24.34;     % systemic clearance [L/h]
     q_kr_mean    = 0;         % gut reabsorption rate [1/h]
+    q_effRB_mean = 2.56;    % bronchi efflux ratio from Himstedt et al.
+    q_effRA_mean = 3.67;    % alveolar efflux ratio from Himstedt et al.
 
 elseif drug == "PZA"
     q_ka_mean    = 1.39;      % gut absorption rate [1/h]
@@ -126,13 +132,8 @@ elseif drug == "PZA"
     q_fR_mean    = 0.09;      % fractional renal clearance
     q_CL_mean    = 4.14;      % systemic clearance [L/h]
     q_kr_mean    = 0;         % gut reabsorption rate [1/h]
-
-elseif drug == "EMB"
-    q_ka_mean    = 0.22;      % gut absorption rate [1/h]
-    q_kdiss_mean = 50;        % elf dissolution rate [1/h]
-    q_fR_mean    = 0.79;      % fractional renal clearance
-    q_CL_mean    = 49.93;     % systemic clearance [L/h]
-    q_kr_mean    = 0;         % gut reabsorption rate [1/h]
+    q_effRB_mean = 2.56;    % bronchi efflux ratio from Himstedt et al.
+    q_effRA_mean = 3.67;    % alveolar efflux ratio from Himstedt et al.
 
 else
     error("Parameters not defined for the requested drug")
@@ -160,7 +161,7 @@ q_kd_mean_frac  = 0.19;
 
 % handle fracs and actual means separately for later processing
 q_means = [q_ka_mean, q_kdiss_mean, q_kF_mean, q_fR_mean, q_kr_mean, ...
-            q_CL_mean, q_pl_mean, q_bELF_mean, q_aELF_mean];
+            q_CL_mean, q_pl_mean, q_bELF_mean, q_aELF_mean, q_effRB_mean, q_effRA_mean];
 
 q_means_fracs = [q_la_mean_frac, q_sp_mean_frac, q_gu_mean_frac, ...
                 q_br_mean_frac, q_hr_mean_frac, q_ad_mean_frac, ...
@@ -168,7 +169,7 @@ q_means_fracs = [q_la_mean_frac, q_sp_mean_frac, q_gu_mean_frac, ...
                 q_oth_mean_frac, q_kd_mean_frac];
 
 q_sds = q_means .* q_cv;
-q_sds(q_sds == 0) = 0.0000000000001;
+q_sds(q_sds == 0) = 1e-10;
 q_sds_fracs = q_means_fracs .* q_cv;
 
 % create cell arrays of truncated probability dists for each flow param
@@ -201,7 +202,7 @@ vol_variables = ["BW", "venblood", "artblood", "lymph", ...
     "gut", "liver", "other", "pleura", "fracsum"];
 
 flow_variables = ["QC", "ka", "kdiss", "fR", "kF", ...
-    "kr", "CL", "pleura", "bELF", "aELF", ...
+    "kr", "CL", "pleura", "bELF", "aELF", "effRB", "effRA"...
     "artblood", "spleen", "gut", "brain", "heart", ...
     "adipose", "muscle", "bone", "skin", "other", ...
     "kidney", "liver", "fracsum"];

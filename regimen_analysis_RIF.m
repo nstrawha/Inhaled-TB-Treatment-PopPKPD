@@ -1,21 +1,32 @@
-%% Regimen Analysis (RIF)
+%% Run PopPK (RIF)
 % 
 % DESCRIPTION:
-%   Adaptation of run_popPK_RIF intended to compare dosing regimens. 
-%   100-1000 mg amounts of inhaled rifampin are compared in 50 mg 
-%   increments, with frequencies of 1-4 x/day, to the standard oral dose of
-%   600 mg 1x/day. Measures resulting AUC_24 and C_max for each 
-%   regimen.
+% This script uses the equations and parameters found in Ramachandran &
+% Gadgil, 2023, in order to compare an oral dose of rifampin to an
+% inhaled/lung dose of rifampin. 
+% 
+% The dosing regimen of each may be altered with oral/lung_dose_RIF and
+% oral/lung_dose_freq_RIF. The compartments which will be plotted and for
+% which PK metrics (AUC_24, C_avg, and C_max) will be calculated may be
+% altered with relevant_compts_RIF.
 %
 % PLOTS GENERATED:
-% - Level curves of all PK metrics
-% 
+% - Concentration-time courses of all patients in relevant compts.
+% - 10th, 50th, and 90th percentiles of patient timecourses in relevant
+%   compts.
+% - MIC distribution and AUC/MIC probability of target attainment (PTA) 
+%   comparison
+% - MIC distribution and C_max/MIC PTA comparison
+%
 % FILES GENERATED:
-% - [PKMetric]_comparisons.xlsx: records data about all average PK metrics
-%   for each dosing method and regimen
+% - popPK_analysis.xlsx: compares PK metrics across patient populations for
+%   oral vs. lung dosing
+% - popPK_CFRs.xlsx: contains estimated cumulative fractions of response 
+%   (CFRs) for AUC/MIC and C_max/MIC PTA target values
 %
 % AUTHORS:
 % Noah Strawhacker (nstrawha@purdue.edu)
+% Alexis Hoerter
 
 clc;
 clearvars;
@@ -32,20 +43,24 @@ addpath("Methods/");
 
 %% Set parameters
 
-% Modeling parameters
-n_days_RIF = 4;
+% fixed model parameters
+n_pts_RIF = 1;
+n_days_RIF = 1; % > 3 is steady state
+days_to_plot_RIF = 1;
 relevant_compts_RIF = {"Lung", "Liver"};
-tstep_RIF = 0.01;
 
-% Dosing regimen info
+% dosing regimen info
 oral_dose_RIF = 600;        % mg
 oral_dose_freq_RIF = 1;     % doses/day
 
 lung_dose_min_RIF = 100;    % mg
-lung_dose_max_RIF = 1000;   % mg
+lung_dose_max_RIF = 150;   % mg
 lung_dose_inc_RIF = 50;     % mg
 lung_dose_freq_min_RIF = 1; % doses/day
 lung_dose_freq_max_RIF = 4; % doses/day
+
+tstep_RIF = 0.01;
+ts_RIF = 0:tstep_RIF:(24 * n_days_RIF - tstep_RIF);
 
 effRB_RIF = 2.56;    % bronchi efflux ratio from Himstedt et al.
 effRA_RIF = 3.67;    % alveolar efflux ratio from Himstedt et al.
@@ -79,9 +94,9 @@ toxic_compts_RIF = ["Liver", "Kidney"];
 % sample physiological parameters
 [bw_PD, vol_PDs_RIF, vol_frac_PDs_RIF, ...
     qc_PD, flow_PDs_RIF, flow_frac_PDs_RIF, ...
-    params_store_RIF] = getParamPDsRIF(0.0000000001, 0.0000000001); % PDs cannot have width 0
+    params_store_RIF] = getParamPDs("RIF", 1e-10, 1e-10); % pds cannot have width 0
 
-all_params_RIF = loadPhysParamsRIF(bw_PD, vol_PDs_RIF, vol_frac_PDs_RIF, ...
+all_params_RIF = loadPhysParams("RIF", bw_PD, vol_PDs_RIF, vol_frac_PDs_RIF, ...
                                          qc_PD, flow_PDs_RIF, flow_frac_PDs_RIF);
 
 
@@ -90,17 +105,16 @@ all_params_RIF = loadPhysParamsRIF(bw_PD, vol_PDs_RIF, vol_frac_PDs_RIF, ...
 lung_dose_RIF = 1; % dummy
 lung_dose_freq_RIF = 1; % dummy
 
-ts_RIF = 0:tstep_RIF:(24 * n_days_RIF - tstep_RIF);
-
 % solve ODEs
-    [C_oraldose_RIF, ...
-        ~] = solveODEs("RIF", all_params_RIF, tstep_RIF, br_frac_RIF, ...
+[C_oraldose_RIF, ...
+    ~] = solveODEs(all_params_RIF, tstep_RIF, br_frac_RIF, ...
                                         effRB_RIF, effRA_RIF, ...
                                         ncompts_total_RIF, n_days_RIF, ...
                                         oral_dose_RIF, lung_dose_RIF, ...
                                         oral_dose_freq_RIF, lung_dose_freq_RIF);
 
 disp("oral pt. calculated")
+
 
 %% Iterate through lung regimens
 
@@ -115,7 +129,7 @@ for lung_dose_freq_RIF = dose_freqs_RIF
         % solve ODEs
         % solve ODEs
     [~, ...
-        C_lungdose_RIF_pt] = solveODEs("RIF", all_params_RIF, tstep_RIF, br_frac_RIF, ...
+        C_lungdose_RIF_pt] = solveODEs(all_params_RIF, tstep_RIF, br_frac_RIF, ...
                                         effRB_RIF, effRA_RIF, ...
                                         ncompts_total_RIF, n_days_RIF, ...
                                         oral_dose_RIF, lung_dose_RIF, ...

@@ -1,4 +1,4 @@
-function dC = oralODEs(~, C, params, effRB, effRA)
+function dC = oralODEs(~, C, params)
 % ORALODES - Sets up the lung dose ODEs for rifampin.
 %
 % INPUTS:
@@ -71,8 +71,8 @@ dC(3) = (1/V.lung) * (...
         (L.lung - F.pleura) * C(3)/K.lung - ... % lung --> lymph
         F.pleura * C(3)/K.lung);                % lung --> pleura
 
-%F.bELF * effRB * C(18) + ...            % bELF --> lung
-%        F.aELF * effRA * C(19) - ...            % aELF --> lung
+%F.bELF * F.effRB * C(18) + ...            % bELF --> lung
+%        F.aELF * F.effRA * C(19) - ...            % aELF --> lung
 %        F.bELF * C(3) - ...                     % lung --> bELF
 %        F.aELF * C(3) + ...                     % lung --> aELF
 
@@ -180,11 +180,11 @@ dC(17) = (1 - F.fR) * F.CL * (...
 
 % Bronchi Epithelial Lining Fluid (bELF)
 dC(18) = F.bELF * C(3) - ...               % lung --> bELF
-         F.bELF * effRB * C(18);           % bELF --> lung
+         F.bELF * F.effRB * C(18);           % bELF --> lung
 
 % Alveolar Epithelial Lining Fluid (aELF)
 dC(19) = F.aELF * C(3) - ...                       % lung --> ELF
-         F.aELF * effRA * C(19);                   % aELF --> lung
+         F.aELF * F.effRA * C(19);                   % aELF --> lung
 
 % Drug Absorption
 dC(20) = -F.ka * C(20);   % absorption --> gut
