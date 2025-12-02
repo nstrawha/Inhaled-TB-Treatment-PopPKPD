@@ -3,13 +3,15 @@
 % study
 
 
-run_RIF = true;
+run_RIF = false;
 run_PZA = true;
 run_INH = true;
 
-n_pts = 1;
+n_pts = 100;
 n_days = 1;
 relevant_compts = {"Lung", "Liver"};
+
+addpath("Methods\")
 
 
 %% Rifampin (RIF)

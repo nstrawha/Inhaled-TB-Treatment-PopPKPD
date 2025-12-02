@@ -68,7 +68,7 @@ Cs_lung_store = cell(1, n_pts);
 % sample physiological parameters
 [bw_PD, vol_PDs, vol_frac_PDs, ...
     qc_PD, flow_PDs, flow_frac_PDs, ...
-    params_store] = getParamPDs(drug, 1e-10, 1e-10); % CVs from Lyons et al.
+    params_store] = getParamPDs(drug, 0.2, 0.3); % CVs from Lyons et al.
 
 % initialize parameter storage
 vol_params_store = params_store{1};
@@ -118,7 +118,7 @@ for compt_idx = 1:length(relevant_compts)
     % pull all concentration timecourses for the current compartment
     current_Cs_orals = cell2mat(cellfun(@(x) x(:, idx_to_plot), Cs_oral_store, "UniformOutput", false));
     current_Cs_lungs = cell2mat(cellfun(@(x) x(:, idx_to_plot), Cs_lung_store, "UniformOutput", false));
-
+    size(current_Cs_orals)
     plotTimecourses(drug, oral_dose, lung_dose, ...
                     compt, n_days, days_to_plot, ...
                     oral_dose_freq, lung_dose_freq, ...
